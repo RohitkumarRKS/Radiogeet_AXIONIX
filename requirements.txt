@@ -1,0 +1,4 @@
+Django>=5.0,<6.0
+Pillow>=10.0
+minimalmodbus>=2.1
+pyserial>=3.5
