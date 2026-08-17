@@ -1,0 +1,1456 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Settings - Radiogeet AXIONIX{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}?v=1.2">
+<style>
+  /* Guaranteed anti-cache override for modal */
+  .modal-container {
+      max-height: 85vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+  }
+  #tank-modal-form {
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 !important;
+      min-height: 0 !important;
+  }
+  .modal-body {
+      overflow-y: auto !important;
+      flex: 1 !important;
+      min-height: 0 !important;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+{% csrf_token %}
+<div class="dashboard-page">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="Radiogeet AXIONIX" class="sidebar-brand-logo-img">
+            <div class="sidebar-brand-sub">RADIOGEET AXIONIX</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{% url 'trend_chart' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Trend Chart
+            </a>
+            <a href="{% url 'alarms' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Alarms
+                <span class="sidebar-nav-badge">{{ high_alarms|add:low_alarms }}</span>
+            </a>
+            <a href="{% url 'reports' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Reports
+            </a>
+            <a href="{% url 'data_log' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                Data Log
+            </a>
+            <a href="{% url 'events' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Events
+            </a>
+            <a href="{% url 'settings' %}" class="sidebar-nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Settings
+            </a>
+            <a href="{% url 'users_list' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Users
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-brand">RADIOGEET</div>
+            <div class="sidebar-footer-copy">&copy; 2026 Radiogeet Digital Pvt. Ltd.<br>All Rights Reserved.</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Top Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    <h1>SETTINGS</h1>
+                    <p>Dashboard > Settings > Device Connection</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <span>System Status</span>
+                    {% if is_connected %}
+                    <div class="status-dot online"></div>
+                    <strong style="color: #4CAF50;">ONLINE</strong>
+                    {% else %}
+                    <div class="status-dot offline"></div>
+                    <strong style="color: #f44336;">OFFLINE</strong>
+                    {% endif %}
+                </div>
+                <div class="header-datetime">
+                    <div class="date" id="header-date">{{ current_time|date:"d M Y" }}</div>
+                    <div id="header-time">{{ current_time|time:"h:i:s A" }}</div>
+                </div>
+                <div class="header-actions">
+                    <!-- Refresh Button -->
+                    <button class="header-action-btn" id="page-refresh-btn" title="Refresh Page" onclick="window.location.reload();">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                    <button class="header-action-btn theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+                        <!-- Sun icon (visible in dark theme) -->
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <!-- Moon icon (visible in light theme) -->
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Content -->
+        <div class="dashboard-content">
+            <!-- Tabs Menu Header -->
+            <!-- Tabs Menu Header -->
+            <div class="settings-tabs-menu">
+                <a href="#" class="tab-item active" data-tab="device-connection">Device Connection</a>
+                <a href="#" class="tab-item" data-tab="serial-settings">Serial Settings</a>
+                <a href="#" class="tab-item" data-tab="modbus-configuration">Modbus Configuration</a>
+                <a href="#" class="tab-item" data-tab="tank-management">Tank Management</a>
+                <a href="#" class="tab-item" data-tab="flow-meter-management">Flow Meter Management</a>
+                <a href="#" class="tab-item" data-tab="scanner-auto-detect">Scanner &amp; Auto-Detect</a>
+                <a href="#" class="tab-item" data-tab="diagnostics-live-logs">Diagnostics &amp; Live Logs</a>
+                <a href="#" class="tab-item" data-tab="register-simulator">Register Simulator</a>
+                <a href="#" class="tab-item" data-tab="system-settings">System Settings</a>
+                <a href="#" class="tab-item" data-tab="about">About</a>
+                <button class="btn btn-primary save-settings-btn" id="save-settings-btn">💾 Save Settings</button>
+            </div>
+
+            <p class="tab-subtext" id="settings-tab-subtext">Configure Masibus Scanner (RS485) connection settings to fetch tank level data.</p>
+
+            <!-- Main Flex Settings Card Row Grid -->
+            <div class="settings-panel-wrapper">
+                
+                <!-- Tab Panel 1: Device Connection -->
+                <div class="settings-tab-panel active-panel" id="panel-device-connection">
+                    <div class="settings-panel-row">
+                        <!-- 1. Connect Device - Tanks -->
+                        <div class="settings-card card-connect" data-profile="Tanks" style="flex: 1;">
+                            <h3 class="card-title">1. CONNECT DEVICE (TANKS - RS485)</h3>
+                            <div class="form-group">
+                                <label>Connection Name</label>
+                                <div class="form-input-wrapper no-icon">
+                                    <input type="text" id="settings-connection-name-tanks" value="{{ tank_config.connection_name|default:'Masibus Scanner 01' }}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Device Type</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-device-type-tanks">
+                                            <option value="Masibus Scanner" {% if tank_config.device_type == "Masibus Scanner" %}selected{% endif %}>Masibus Scanner</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Connection Type</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-connection-type-tanks">
+                                            <option value="Serial (RS485)" {% if tank_config.connection_type == "Serial (RS485)" %}selected{% endif %}>Serial (RS485)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>COM Port</label>
+                                <div class="form-row" style="grid-template-columns: 1fr auto;">
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-com-port-tanks">
+                                            {% for port in available_ports %}
+                                                <option value="{{ port }}" {% if tank_config.com_port == port %}selected{% endif %}>{{ port }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <button class="refresh-com-btn" data-target="settings-com-port-tanks" type="button">🔄</button>
+                                </div>
+                            </div>
+                            <div class="status-test-row">
+                                <div class="status-indicator-wrapper">
+                                    <span>Status</span>
+                                    {% if is_connected %}
+                                    <div class="indicator-dot connected"></div>
+                                    <strong class="text-green">Connected</strong>
+                                    {% else %}
+                                     <div class="indicator-dot disconnected" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                                     <strong style="color: #ff3b30;">Disconnected</strong>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-outline test-connection-btn" data-profile="Tanks" type="button">Test Connection</button>
+                            </div>
+                        </div>
+
+                        <!-- 1. Connect Device - Flow Meters -->
+                        <div class="settings-card card-connect" data-profile="Flow Meters" style="flex: 1;">
+                            <h3 class="card-title">1. CONNECT DEVICE (FLOW METERS - RS485)</h3>
+                            <div class="form-group">
+                                <label>Connection Name</label>
+                                <div class="form-input-wrapper no-icon">
+                                    <input type="text" id="settings-connection-name-flow" value="{{ flow_config.connection_name|default:'Flow Meter Scanner 01' }}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Device Type</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-device-type-flow">
+                                            <option value="Modbus RS485" {% if flow_config.device_type == "Modbus RS485" %}selected{% endif %}>Modbus RS485</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Connection Type</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-connection-type-flow">
+                                            <option value="Serial (RS485)" {% if flow_config.connection_type == "Serial (RS485)" %}selected{% endif %}>Serial (RS485)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>COM Port</label>
+                                <div class="form-row" style="grid-template-columns: 1fr auto;">
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-com-port-flow">
+                                            {% for port in available_ports_flow %}
+                                                <option value="{{ port }}" {% if flow_config.com_port == port %}selected{% endif %}>{{ port }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <button class="refresh-com-btn" data-target="settings-com-port-flow" type="button">🔄</button>
+                                </div>
+                            </div>
+                            <div class="status-test-row">
+                                <div class="status-indicator-wrapper">
+                                    <span>Status</span>
+                                    {% if is_connected %}
+                                    <div class="indicator-dot connected"></div>
+                                    <strong class="text-green">Connected</strong>
+                                    {% else %}
+                                     <div class="indicator-dot disconnected" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                                     <strong style="color: #ff3b30;">Disconnected</strong>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-outline test-connection-btn" data-profile="Flow Meters" type="button">Test Connection</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connection steps -->
+                    <div class="settings-card steps-card" style="margin-top: 24px;">
+                        <h3 class="card-title">CONNECTION STEPS</h3>
+                        <div class="steps-row">
+                            <div class="step-item"><span class="step-num">1</span> Connect RS485 port to PC using RS485 to USB/RS485 converter.</div>
+                            <div class="step-item"><span class="step-num">2</span> Select correct COM Port and configure Serial Settings for both profiles.</div>
+                            <div class="step-item"><span class="step-num">3</span> Set Modbus RTU parameters (Slave ID must match Scanner setting).</div>
+                            <div class="step-item"><span class="step-num">4</span> Map Holding/Input Registers for each device.</div>
+                            <div class="step-item"><span class="step-num">5</span> Click "Test Connection" and then "Save Settings".</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Panel 2: Serial Settings -->
+                <div class="settings-tab-panel" id="panel-serial-settings" style="display: none;">
+                    <div class="settings-panel-row">
+                        <!-- 2. Serial Settings - Tanks -->
+                        <div class="settings-card card-serial" data-profile="Tanks" style="flex: 1;">
+                            <h3 class="card-title">2. SERIAL SETTINGS (TANKS - RS485)</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Baud Rate</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-baud-rate-tanks">
+                                            <option value="9600" {% if tank_config.baud_rate == 9600 %}selected{% endif %}>9600</option>
+                                            <option value="19200" {% if tank_config.baud_rate == 19200 %}selected{% endif %}>19200</option>
+                                            <option value="115200" {% if tank_config.baud_rate == 115200 %}selected{% endif %}>115200</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Data Bits *</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-data-bits-tanks">
+                                            <option value="8" {% if tank_config.data_bits == 8 %}selected{% endif %}>8</option>
+                                            <option value="7" {% if tank_config.data_bits == 7 %}selected{% endif %}>7</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Parity</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-parity-tanks">
+                                            <option value="None" {% if tank_config.parity == "None" %}selected{% endif %}>None</option>
+                                            <option value="Even" {% if tank_config.parity == "Even" %}selected{% endif %}>Even</option>
+                                            <option value="Odd" {% if tank_config.parity == "Odd" %}selected{% endif %}>Odd</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Stop Bits</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-stop-bits-tanks">
+                                            <option value="1" {% if tank_config.stop_bits == 1 %}selected{% endif %}>1</option>
+                                            <option value="2" {% if tank_config.stop_bits == 2 %}selected{% endif %}>2</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Timeout (sec)</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" step="0.1" id="settings-timeout-tanks" value="{{ tank_config.timeout|default:1.0 }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Retry Count</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="settings-retry-count-tanks" value="{{ tank_config.retry_count|default:3 }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Serial Settings - Flow Meters -->
+                        <div class="settings-card card-serial" data-profile="Flow Meters" style="flex: 1;">
+                            <h3 class="card-title">2. SERIAL SETTINGS (FLOW METERS - RS485)</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Baud Rate</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-baud-rate-flow">
+                                            <option value="9600" {% if flow_config.baud_rate == 9600 %}selected{% endif %}>9600</option>
+                                            <option value="19200" {% if flow_config.baud_rate == 19200 %}selected{% endif %}>19200</option>
+                                            <option value="115200" {% if flow_config.baud_rate == 115200 %}selected{% endif %}>115200</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Data Bits *</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-data-bits-flow">
+                                            <option value="8" {% if flow_config.data_bits == 8 %}selected{% endif %}>8</option>
+                                            <option value="7" {% if flow_config.data_bits == 7 %}selected{% endif %}>7</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Parity</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-parity-flow">
+                                            <option value="None" {% if flow_config.parity == "None" %}selected{% endif %}>None</option>
+                                            <option value="Even" {% if flow_config.parity == "Even" %}selected{% endif %}>Even</option>
+                                            <option value="Odd" {% if flow_config.parity == "Odd" %}selected{% endif %}>Odd</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Stop Bits</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="settings-stop-bits-flow">
+                                            <option value="1" {% if flow_config.stop_bits == 1 %}selected{% endif %}>1</option>
+                                            <option value="2" {% if flow_config.stop_bits == 2 %}selected{% endif %}>2</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Timeout (sec)</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" step="0.1" id="settings-timeout-flow" value="{{ flow_config.timeout|default:1.0 }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Retry Count</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="settings-retry-count-flow" value="{{ flow_config.retry_count|default:3 }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Panel 3: Modbus Configuration -->
+                <div class="settings-tab-panel" id="panel-modbus-configuration" style="display: none;">
+                    <div class="settings-panel-row">
+                        <!-- 3. Modbus settings - Tanks -->
+                        <div class="settings-card card-modbus" data-profile="Tanks" style="flex: 1;">
+                            <h3 class="card-title">3. MODBUS SETTINGS (TANKS)</h3>
+                            <div class="form-group">
+                                <label>Slave ID</label>
+                                <div class="form-row" style="grid-template-columns: 1fr auto;">
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="settings-slave-id-tanks" value="{{ tank_config.slave_id|default:1 }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Scan Interval</label>
+                                <div class="form-row" style="grid-template-columns: 1fr auto; align-items: center;">
+                                     <div class="form-input-wrapper no-icon">
+                                         <input type="number" step="0.1" id="settings-polling-interval-tanks" value="{{ tank_config.polling_interval|default:5.0 }}">
+                                     </div>
+                                    <span class="input-annotation">sec</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Modbus settings - Flow Meters -->
+                        <div class="settings-card card-modbus" data-profile="Flow Meters" style="flex: 1;">
+                            <h3 class="card-title">3. MODBUS SETTINGS (FLOW METERS)</h3>
+                            <div class="form-group">
+                                <label>Slave ID</label>
+                                <div class="form-row" style="grid-template-columns: 1fr auto;">
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="settings-slave-id-flow" value="{{ flow_config.slave_id|default:1 }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Scan Interval</label>
+                                <div class="form-row" style="grid-template-columns: 1fr auto; align-items: center;">
+                                     <div class="form-input-wrapper no-icon">
+                                         <input type="number" step="0.1" id="settings-polling-interval-flow" value="{{ flow_config.polling_interval|default:5.0 }}">
+                                     </div>
+                                    <span class="input-annotation">sec</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Panel 4: Tank Management -->
+                <div class="settings-tab-panel" id="panel-tank-management" style="display: none;">
+                    <div class="settings-panel-row" style="display: block;">
+                        <!-- 4. Register Mapping -->
+                        <div class="settings-card mapping-card" style="width: 100%;">
+                            <h3 class="card-title">4. REGISTER MAPPING (TANK LEVEL DATA)</h3>
+                            <div class="mapping-table-wrap">
+                                <table class="mapping-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tank No.</th>
+                                            <th>Tank Name</th>
+                                            <th>Register Address (Holding Register)</th>
+                                            <th>Data Type</th>
+                                            <th>Raw Zero (4mA)</th>
+                                            <th>Raw Span (20mA)</th>
+                                            <th>Scale Type</th>
+                                            <th>Scale Min</th>
+                                            <th>Scale Max</th>
+                                            <th>Unit</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in registers %}
+                                        <tr data-tank-id="{{ r.id }}">
+                                            <td>{{ r.no }}</td>
+                                            <td>{{ r.name }}</td>
+                                            <td>{{ r.address }}</td>
+                                            <td>{{ r.type }}</td>
+                                            <td>{{ r.raw_zero }}</td>
+                                            <td>{{ r.raw_span }}</td>
+                                            <td>{{ r.scale }}</td>
+                                            <td>{{ r.min }}</td>
+                                            <td>{{ r.max }}</td>
+                                            <td>{{ r.unit }}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                                     <button class="edit-tank-btn" 
+                                                             data-tank-id="{{ r.id }}" 
+                                                             data-tank-name="{{ r.name }}" 
+                                                             data-tank-address="{{ r.address }}" 
+                                                             data-capacity="{{ r.capacity }}"
+                                                             data-high-limit="{{ r.high_limit }}"
+                                                             data-low-limit="{{ r.low_limit }}"
+                                                             data-widget-type="{{ r.widget_type }}"
+                                                             data-raw-zero="{{ r.raw_zero }}"
+                                                             data-raw-span="{{ r.raw_span }}"
+                                                             data-scanner-raw-zero="{{ r.scanner_raw_zero }}"
+                                                             data-scanner-raw-span="{{ r.scanner_raw_span }}"
+                                                             data-slave-id="{{ r.slave_id }}"
+                                                             data-function-code="{{ r.function_code }}"
+                                                             data-data-type="{{ r.type }}"
+                                                             data-byte-order="{{ r.byte_order }}"
+                                                             data-scaling="{{ r.scaling }}"
+                                                             data-offset="{{ r.offset }}"
+                                                             data-flow-rate-register="{{ r.flow_rate_register }}"
+                                                             data-total-volume-register="{{ r.total_volume_register }}"
+                                                             data-flow-unit="{{ r.flow_unit }}"
+                                                             data-total-unit="{{ r.total_unit }}"
+                                                             data-unit="{{ r.unit }}"
+                                                             data-capacity-unit="{{ r.capacity_unit|default:"KL" }}"
+                                                             data-error-accuracy="{{ r.error_accuracy }}"
+                                                             data-alarm-enabled="{{ r.alarm_enabled|yesno:"true,false" }}"
+                                                             type="button" 
+                                                             style="background: transparent; border: none; color: #3b82f6; cursor: pointer; font-size: 1rem; transition: transform 0.2s; padding: 2px;" 
+                                                             title="Edit Tank">✏️</button>
+                                                    <button class="delete-tank-btn" 
+                                                             data-tank-id="{{ r.id }}" 
+                                                             type="button" 
+                                                             style="background: transparent; border: none; color: #ff3b30; cursor: pointer; font-size: 1rem; transition: transform 0.2s; padding: 2px;" 
+                                                             title="Delete Tank">🗑️</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mapping-actions-row">
+                                <button class="btn btn-outline" type="button" id="add-tank-btn">+ Add Tank</button>
+                                <p class="mapping-annotation">* Register address should match Masibus Scanner mapped register for each analog input.</p>
+                            </div>
+
+<!-- Tank Configuration Modal -->
+<div class="card" id="tank-modal-backdrop" style="display: none; margin-top: 20px; border: 1px solid var(--primary-green); padding: 20px;">
+    <div class="">
+        <div class="modal-header">
+            <span class="modal-title" id="tank-modal-title">Configure Tank Widget</span>
+            <button class="modal-close-btn" id="tank-modal-close-btn" type="button">&times;</button>
+        </div>
+        <form id="tank-modal-form" method="POST" action="" style="margin-top: 20px;">
+            {% csrf_token %}
+            <div class="">
+                <!-- Row 1: ID & Name -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-tank-id">Tank ID *</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="text" id="modal-tank-id" placeholder="e.g. TANK_01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-tank-name">Tank Name *</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="text" id="modal-tank-name" placeholder="e.g. Diesel Storage" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Capacity, Capacity Unit, Display Unit, Widget Type -->
+                <div class="form-row-two" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label for="modal-capacity" id="modal-capacity-label">Tank Capacity</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-capacity" value="5.0" placeholder="e.g. 5.0 or 5000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-capacity-unit">Capacity Unit</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-capacity-unit">
+                                <option value="KL">KL (Kiloliters)</option>
+                                <option value="L">L (Liters)</option>
+                                <option value="mL">mL (Milliliters)</option>
+                                <option value="m³">m³ (Cubic Meters)</option>
+                                <option value="gal">gal (Gallons)</option>
+                                <option value="mm">mm (Millimeters)</option>
+                                <option value="RAW">RAW / No Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-unit">Display Unit</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-unit">
+                                <option value="%">% (Percentage)</option>
+                                <option value="L">Liters (Volume)</option>
+                                <option value="mL">mL (Milliliters)</option>
+                                <option value="KL">Kiloliters (Volume)</option>
+                                <option value="m³">m³ (Cubic Meters)</option>
+                                <option value="gal">Gallons (Volume)</option>
+                                <option value="mm">mm (Millimeters)</option>
+                                <option value="RAW">RAW / No Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-widget-type">Widget Type</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-widget-type">
+                                <option value="cylinder">Cylinder</option>
+                                <option value="card">Card View</option>
+                                <option value="normal">Normal Bar</option>
+                                <option value="flow_meter">Flow Meter</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flow Meter specific fields group (hidden by default) -->
+                <div id="modal-flow-fields-group" style="display: none; border: 1px dashed rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; background: rgba(255,255,255,0.01);">
+                    <div class="form-row-two" style="margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label for="modal-flow-rate-register">Flow Rate Register *</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="number" id="modal-flow-rate-register" placeholder="e.g. 40001" value="40001">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-total-volume-register">Total Volume Register</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="number" id="modal-total-volume-register" placeholder="e.g. 40003 (Optional)" value="40003">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row-two">
+                        <div class="form-group">
+                            <label for="modal-flow-unit">Flow Unit</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="text" id="modal-flow-unit" value="L/min">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-total-unit">Total Unit</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="text" id="modal-total-unit" value="Liters">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Modbus Address, Slave ID, Function Code -->
+                <div class="form-row-three">
+                    <div class="form-group">
+                        <label for="modal-register-address">Register Address *</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" id="modal-register-address" placeholder="e.g. 30001" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-slave-id">Slave ID</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" id="modal-slave-id" value="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-function-code">Function Code</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-function-code">
+                                <option value="4">04 Read Input Registers</option>
+                                <option value="3">03 Read Holding Registers</option>
+                                <option value="1">01 Read Coils</option>
+                                <option value="2">02 Read Discrete Inputs</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Data Type, Byte Order -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-data-type">Data Type</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-data-type">
+                                <option value="UInt16">UInt16 (16-bit Integer)</option>
+                                <option value="Int16">Int16 (Signed 16-bit)</option>
+                                <option value="Float32">Float32 (32-bit Single Precision)</option>
+                                <option value="Int32">Int32 (32-bit Signed)</option>
+                                <option value="UInt32">UInt32 (32-bit Integer)</option>
+                                <option value="Boolean">Boolean (Coil/Bit Value)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-byte-order">Byte Order</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-byte-order">
+                                <option value="ABCD">ABCD (Normal / Big Endian)</option>
+                                <option value="BADC">BADC (Swapped Bytes)</option>
+                                <option value="CDAB">CDAB (Swapped Words)</option>
+                                <option value="DCBA">DCBA (Little Endian)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 5: Scaling Factor, Offset -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-scaling">Scaling Factor</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-scaling" value="1.0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-offset">Offset</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-offset" value="0.0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 6: Raw Zero & Raw Span -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-raw-zero">Raw Zero Value (0% level)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-raw-zero" value="4000.0">
+                        </div>
+                        <span class="input-annotation" style="font-size: 0.65rem; color: var(--text-muted);">Set both to 0 to bypass 4-20mA scaling.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-raw-span">Raw Span Value (100% level)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-raw-span" value="20000.0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optional Quick 2-Point Calibration Action Bar & Expandable Down-Side Panel -->
+                <input type="hidden" id="modal-scanner-raw-zero" value="0.0">
+                <input type="hidden" id="modal-scanner-raw-span" value="0.0">
+                <div style="margin: -5px 0 15px 0; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.04); overflow: hidden;">
+                    <div style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: rgba(59, 130, 246, 0.08);">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.78rem; font-weight: 700; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+                                ⚡ Independent Scanner Raw Calibration (Optional)
+                            </span>
+                            <span style="font-size: 0.68rem; color: var(--text-muted);">Set custom Start (0%) and End (100%) scanner counts. Leaves 4-20mA settings separate.</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" id="btn-quick-set-raw-0" class="btn btn-outline" style="font-size: 0.75rem; padding: 5px 12px; border-color: #3b82f6; color: #60a5fa; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Open panel to set Raw 0% level">Set 0% (Raw = 0) ⚙️</button>
+                            <button type="button" id="btn-quick-set-raw-100" class="btn btn-outline" style="font-size: 0.75rem; padding: 5px 12px; border-color: #10b981; color: #34d399; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Open panel to set Raw 100% full level">Set 100% (e.g. 4585) ⚙️</button>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Down-Side Panel for entering 0 and 100 values -->
+                    <div id="panel-raw-calibration-downside" style="display: none; padding: 14px; background: rgba(15, 23, 42, 0.6); border-top: 1px solid rgba(59, 130, 246, 0.2);">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary-green-light); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                            🔧 2-Point Raw Calibration Settings (Independent from 4-20mA)
+                        </div>
+                        <div class="form-row-two" style="margin-bottom: 12px;">
+                            <div class="form-group">
+                                <label for="input-panel-raw-zero" style="font-size: 0.75rem; color: #93c5fd;">Scanner Raw Start (0% Empty Tank)</label>
+                                <div class="form-input-wrapper no-icon" style="display: flex; gap: 6px;">
+                                    <input type="number" step="any" id="input-panel-raw-zero" value="0.0" placeholder="e.g. 0">
+                                    <button type="button" id="btn-preset-0" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.72rem; white-space: nowrap; border-color: #3b82f6; color: #60a5fa;">Set 0</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-panel-raw-span" style="font-size: 0.75rem; color: #86efac;">Scanner Raw End (100% Full Tank)</label>
+                                <div class="form-input-wrapper no-icon" style="display: flex; gap: 6px;">
+                                    <input type="number" step="any" id="input-panel-raw-span" value="4585.0" placeholder="e.g. 4585">
+                                    <button type="button" id="btn-preset-4585" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.72rem; white-space: nowrap; border-color: #10b981; color: #34d399;">Set 4585</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; align-items: center; margin-top: 10px;">
+                            <span style="font-size: 0.7rem; color: var(--text-muted); margin-right: auto;">* Click Apply to save independent Scanner 2-Point Calibration.</span>
+                            <button type="button" id="btn-cancel-raw-panel" class="btn btn-outline" style="font-size: 0.75rem; padding: 4px 12px;">Close</button>
+                            <button type="button" id="btn-apply-raw-panel" class="btn btn-primary" style="font-size: 0.75rem; padding: 4px 14px; background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: #000; font-weight: bold;">Apply Calibration</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 7: High Limit & Low Limit -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-high-limit" id="modal-high-limit-label">High Alarm Limit (%)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-high-limit" value="90.0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-low-limit" id="modal-low-limit-label">Low Alarm Limit (%)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-low-limit" value="10.0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 8: Calibration Error Accuracy -->
+                <div class="form-row-two" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="modal-tank-error-accuracy" id="modal-tank-error-accuracy-label">Error Accuracy Offset (%)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-tank-error-accuracy" placeholder="e.g. 10 or -5" value="0.0">
+                        </div>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; padding-top: 25px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="modal-alarm-enabled" checked style="cursor: pointer;"> Enable Alarm
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <button class="btn btn-outline" id="tank-modal-cancel-btn" type="button">Cancel</button>
+                <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, var(--primary-green-light) 0%, #3b82f6 100%); color: #000; font-weight: bold;">Save Config</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                </div>
+
+                
+                <!-- Tab Panel: Flow Meter Management -->
+                <div class="settings-tab-panel" id="panel-flow-meter-management" style="display: none;">
+                    <div class="settings-panel-row" style="display: block;">
+                        <div class="settings-card mapping-card" style="width: 100%;">
+                            <h3 class="card-title">FLOW METER MAPPING</h3>
+                            <div class="mapping-table-wrap">
+                                <table class="mapping-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Meter ID</th>
+                                            <th>Meter Name</th>
+                                            <th>Flow Rate Register</th>
+                                            <th>Total Volume Register</th>
+                                            <th>Slave ID</th>
+                                            <th>Data Type</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="flow-meter-table-body">
+                                        {% for fm in flow_registers %}
+                                        <tr data-meter-id="{{ fm.id }}">
+                                            <td>{{ fm.id }}</td>
+                                            <td>{{ fm.name }}</td>
+                                            <td>{{ fm.flow_rate_register }}</td>
+                                            <td>{{ fm.total_volume_register }}</td>
+                                            <td>{{ fm.slave_id }}</td>
+                                            <td>{{ fm.data_type }}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                                     <button class="edit-flow-meter-btn" 
+                                                             data-meter-id="{{ fm.id }}" 
+                                                             data-meter-name="{{ fm.name }}" 
+                                                             data-flow-reg="{{ fm.flow_rate_register }}" 
+                                                             data-total-reg="{{ fm.total_volume_register }}"
+                                                             data-slave-id="{{ fm.slave_id }}"
+                                                             data-function-code="{{ fm.function_code }}"
+                                                             data-data-type="{{ fm.data_type }}"
+                                                             data-byte-order="{{ fm.byte_order }}"
+                                                             data-flow-unit="{{ fm.flow_unit }}"
+                                                             data-total-unit="{{ fm.total_unit }}"
+                                                             data-error-accuracy="{{ fm.error_accuracy }}"
+                                                             data-high-limit="{{ fm.high_limit }}"
+                                                             data-low-limit="{{ fm.low_limit }}"
+                                                             data-scanner-raw-zero="{{ fm.scanner_raw_zero|default:"0.0" }}"
+                                                             data-scanner-raw-span="{{ fm.scanner_raw_span|default:"0.0" }}"
+                                                             data-calibrated-span="{{ fm.calibrated_span|default:"100.0" }}"
+                                                             data-alarm-enabled="{{ fm.alarm_enabled|yesno:"true,false" }}"
+                                                             type="button" 
+                                                             style="background: transparent; border: none; color: #3b82f6; cursor: pointer; font-size: 1rem; transition: transform 0.2s; padding: 2px;" 
+                                                             title="Edit Flow Meter">✏️</button>
+                                                    <button class="delete-flow-meter-btn" 
+                                                             data-meter-id="{{ fm.id }}" 
+                                                             type="button" 
+                                                             style="background: transparent; border: none; color: #ff3b30; cursor: pointer; font-size: 1rem; transition: transform 0.2s; padding: 2px;" 
+                                                             title="Delete Flow Meter">🗑️</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mapping-actions-row">
+                                <button class="btn btn-outline" type="button" id="add-flow-meter-btn">+ Add Flow Meter</button>
+                            </div>
+
+<!-- Flow Meter Configuration Modal -->
+<div class="card" id="flow-modal-backdrop" style="display: none; margin-top: 20px; border: 1px solid var(--primary-green); padding: 20px;">
+    <div class="">
+        <div class="modal-header">
+            <span class="modal-title" id="flow-modal-title">Configure Flow Meter</span>
+            <button class="modal-close-btn" id="flow-modal-close-btn" type="button">&times;</button>
+        </div>
+        <form id="flow-modal-form" method="POST" action="" style="margin-top: 20px;">
+            {% csrf_token %}
+            <div class="">
+                <!-- Row 1: ID & Name -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-flow-id">Meter ID *</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="text" id="modal-flow-id" placeholder="e.g. FM_01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-flow-name">Meter Name *</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="text" id="modal-flow-name" placeholder="e.g. Main Water Inlet" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Modbus Addresses -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-flow-rate-reg">Flow Rate Register *</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" id="modal-flow-rate-reg" placeholder="e.g. 40001" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-total-volume-reg">Total Volume Register</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" id="modal-total-volume-reg" placeholder="e.g. 40003 (Optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Modbus Slave & Func Code -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-flow-slave-id">Slave ID</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" id="modal-flow-slave-id" value="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-flow-function-code">Function Code</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-flow-function-code">
+                                <option value="3">03 Read Holding Registers</option>
+                                <option value="4">04 Read Input Registers</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Row 4: Data Type, Byte Order -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-flow-data-type">Data Type</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-flow-data-type">
+                                <option value="Float32">Float32 (32-bit Single Precision)</option>
+                                <option value="UInt32">UInt32 (32-bit Integer)</option>
+                                <option value="Int32">Int32 (32-bit Signed)</option>
+                                <option value="UInt16">UInt16 (16-bit Integer)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-flow-byte-order">Byte Order</label>
+                        <div class="form-input-wrapper no-icon">
+                            <select id="modal-flow-byte-order">
+                                <option value="ABCD">ABCD (Normal / Big Endian)</option>
+                                <option value="CDAB">CDAB (Swapped Words)</option>
+                                <option value="BADC">BADC (Swapped Bytes)</option>
+                                <option value="DCBA">DCBA (Little Endian)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 5: Units -->
+                <div class="form-row-two">
+                    <div class="form-group">
+                        <label for="modal-flow-unit">Flow Rate Unit</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="text" id="modal-flow-unit" value="m³/h">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-total-unit">Total Volume Unit</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="text" id="modal-total-unit" value="m³">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 6: Error Accuracy Offset & Alarm Enabled -->
+                <div class="form-row-two" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="modal-flow-error-accuracy" id="modal-flow-error-accuracy-label">Error Accuracy Offset (L/min)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-flow-error-accuracy" placeholder="e.g. 10 or -5" value="0.0">
+                        </div>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; padding-top: 25px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="modal-flow-alarm-enabled" checked style="cursor: pointer;"> Enable Alarm
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Row 7: High/Low Limits -->
+                <div class="form-row-two" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="modal-flow-high-limit" id="modal-flow-high-label">High Alarm Limit (L/min)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-flow-high-limit" value="90.0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-flow-low-limit" id="modal-flow-low-label">Low Alarm Limit (L/min)</label>
+                        <div class="form-input-wrapper no-icon">
+                            <input type="number" step="any" id="modal-flow-low-limit" value="10.0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 8: Flow Meter 2-Point Calibration (Optional) -->
+                <div style="margin-top: 15px; border: 1px solid rgba(59, 130, 246, 0.2); border-radius: var(--radius-sm); padding: 12px; background: rgba(59, 130, 246, 0.02);">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #60a5fa; margin-bottom: 8px;">
+                        ⚡ 2-Point Flow Rate Calibration (Optional)
+                    </div>
+                    <div class="form-row-three" style="grid-template-columns: 1fr 1fr 1.2fr; gap: 10px;">
+                        <div class="form-group">
+                            <label for="modal-flow-scanner-raw-zero" style="font-size: 0.72rem;">Scanner Raw Zero (0 Flow)</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="number" step="any" id="modal-flow-scanner-raw-zero" value="0.0" placeholder="e.g. 0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-flow-scanner-raw-span" style="font-size: 0.72rem;">Scanner Raw Span (Max Flow)</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="number" step="any" id="modal-flow-scanner-raw-span" value="0.0" placeholder="e.g. 4585">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-flow-calibrated-span" style="font-size: 0.72rem;">Calibrated Max Flow Value</label>
+                            <div class="form-input-wrapper no-icon">
+                                <input type="number" step="any" id="modal-flow-calibrated-span" value="100.0" placeholder="e.g. 100.0">
+                            </div>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-top: 4px;">* Set both Raw counts to 0 to bypass scaling and read registers directly.</span>
+                </div>
+            </div>
+            <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <button class="btn btn-outline" id="flow-modal-cancel-btn" type="button">Cancel</button>
+                <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, var(--primary-green-light) 0%, #3b82f6 100%); color: #000; font-weight: bold;">Save Config</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                </div>
+
+<!-- Tab Panel: Scanner & Auto-Detect -->
+                <div class="settings-tab-panel" id="panel-scanner-auto-detect" style="display: none;">
+                    <div class="settings-panel-row" style="flex-direction: column; gap: 24px; display: flex;">
+                        
+                        <!-- 1. Port Auto Scanner -->
+                        <div class="settings-card">
+                            <h3 class="card-title">🔌 AUTO PORT DETECTOR</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Scan the system to identify active serial COM ports physically available on the server host.</p>
+                            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+                                <button class="btn btn-outline" id="run-port-scan-btn" type="button">Scan System Ports</button>
+                                <span id="port-scan-status" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+                            </div>
+                            <div id="port-scan-results" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">No scan executed yet.</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. Slave ID Scanner -->
+                        <div class="settings-card">
+                            <h3 class="card-title">🔍 AUTO SLAVE ID SCANNER</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">Queries a range of station IDs on the selected port to find active listening Modbus RTU Slave devices.</p>
+                            <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr auto; align-items: flex-end; gap: 12px;">
+                                <div class="form-group">
+                                    <label>Target COM Port</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="slave-scan-port">
+                                            {% for port in available_ports %}
+                                                <option value="{{ port }}">{{ port }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Start Slave ID</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="slave-scan-start" value="1" min="1" max="247">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>End Slave ID</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="slave-scan-end" value="10" min="1" max="247">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="run-slave-scan-btn" type="button" style="margin-bottom: 4px; background: linear-gradient(135deg, var(--primary-green-light) 0%, #3b82f6 100%); color: #000; font-weight: bold;">Scan Slave Range</button>
+                            </div>
+                            <div id="slave-scan-results" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Results will be displayed here.</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Register Block Scanner -->
+                        <div class="settings-card">
+                            <h3 class="card-title">📖 REGISTER ADDRESS BLOCK SCANNER</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">Polls a range of register addresses to inspect physical inputs and identify mapped data registers.</p>
+                            <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; align-items: flex-end; gap: 12px;">
+                                <div class="form-group">
+                                    <label>COM Port</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="reg-scan-port">
+                                            {% for port in available_ports %}
+                                                <option value="{{ port }}">{{ port }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Slave ID</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="reg-scan-slave-id" value="1" min="1" max="247">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Function Code</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select id="reg-scan-func-code">
+                                            <option value="3">03 Read Holding Registers</option>
+                                            <option value="4">04 Read Input Registers</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Start Address</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="reg-scan-start" value="40001">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>End Address</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <input type="number" id="reg-scan-end" value="40010">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="run-reg-scan-btn" type="button" style="margin-bottom: 4px; background: linear-gradient(135deg, var(--primary-green-light) 0%, #3b82f6 100%); color: #000; font-weight: bold;">Scan Registers</button>
+                            </div>
+                            <div id="reg-scan-results-wrap" style="margin-top: 16px; display: none;">
+                                <div class="mapping-table-wrap">
+                                    <table class="mapping-table" id="reg-scan-results-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Register Address</th>
+                                                <th>Decimal Value</th>
+                                                <th>Hexadecimal</th>
+                                                <th>Binary Representation</th>
+                                                <th>Response Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Tab Panel: Diagnostics & Live Logs -->
+                <div class="settings-tab-panel" id="panel-diagnostics-live-logs" style="display: none;">
+                    <div class="settings-panel-row" style="flex-direction: column; gap: 24px; display: flex;">
+                        
+                        <!-- 1. Stats Grid -->
+                        <div class="settings-card">
+                            <h3 class="card-title">📡 REAL-TIME TELEMETRY DIAGNOSTICS</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-top: 12px;">
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">TX Packets</div>
+                                    <div id="diag-tx-packets" style="font-size: 1.8rem; font-weight: 800; color: #3b82f6; margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">RX Packets</div>
+                                    <div id="diag-rx-packets" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-green-light); margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">CRC Errors</div>
+                                    <div id="diag-crc-errors" style="font-size: 1.8rem; font-weight: 800; color: #ff3b30; margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Timeouts</div>
+                                    <div id="diag-timeouts" style="font-size: 1.8rem; font-weight: 800; color: #ff9f0a; margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Latency (ms)</div>
+                                    <div id="diag-latency" style="font-size: 1.8rem; font-weight: 800; color: #00bcd4; margin-top: 4px;">0.0</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Link Quality</div>
+                                    <div id="diag-quality" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-green-light); margin-top: 4px;">100.0%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Terminal log -->
+                        <div class="settings-card" style="display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+                                <h3 class="card-title" style="margin-bottom: 0;">📟 LIVE MODBUS RTU TRAFFIC MONITOR (HEX FRAMES)</h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn btn-outline" id="pause-terminal-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: rgba(255,255,255,0.15);" type="button">⏸ Pause</button>
+                                    <button class="btn btn-outline" id="clear-terminal-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: rgba(255,255,255,0.15);" type="button">🗑 Clear Log</button>
+                                </div>
+                            </div>
+                            <div id="terminal-viewer" style="height: 350px; background: #07090e; border: 1px solid #1e293b; border-radius: 6px; padding: 16px; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem; line-height: 1.6; overflow-y: auto; color: #a1a1aa; white-space: pre-wrap; word-break: break-all;">
+                                <div style="color: #64748b; font-style: italic;">Connecting to serial diagnostics telemetry stream...</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Tab Panel: Register Simulator -->
+                <div class="settings-tab-panel" id="panel-register-simulator" style="display: none;">
+                    <div class="settings-panel-row" style="display: block;">
+                        <div class="settings-card mapping-card" style="width: 100%;">
+                            <h3 class="card-title">LOCAL TELEMETRY DATABASE REGISTER SIMULATOR</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+                                When COM Port is set to <strong>SIMULATOR</strong>, the background Modbus polling daemon queries this database simulation table instead of physical serial hardware. You can update values below to test alarm limit triggers, dynamic widget scales, trend lines, and events logging in real-time.
+                            </p>
+                            <div class="mapping-table-wrap">
+                                <table class="mapping-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Register Address</th>
+                                            <th>Mapped Widget / Channel</th>
+                                            <th>Style</th>
+                                            <th>Current Value</th>
+                                            <th>Quick-Set Value Buttons</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sim in sim_registers %}
+                                        <tr data-register-address="{{ sim.register_address }}">
+                                            <td style="font-weight: 700; color: var(--primary-green-light);">{{ sim.register_address }}</td>
+                                            <td>
+                                                {% for r in registers %}
+                                                    {% if r.address == sim.register_address %}
+                                                        {{ r.name }} ({{ r.id }})
+                                                    {% endif %}
+                                                {% empty %}
+                                                    -- Unmapped --
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for r in registers %}
+                                                    {% if r.address == sim.register_address %}
+                                                        <span style="text-transform: capitalize; font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">{{ r.widget_type }}</span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 4px 8px; width: 100px; display: inline-block;">
+                                                    <input type="number" class="sim-value-input" value="{{ sim.value }}" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem; text-align: center;">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                                    <button class="btn btn-outline quick-set-btn" data-val="0" style="padding: 2px 6px; font-size: 0.72rem; min-width: auto; border-radius: 4px;" type="button">0</button>
+                                                    <button class="btn btn-outline quick-set-btn" data-val="50" style="padding: 2px 6px; font-size: 0.72rem; min-width: auto; border-radius: 4px;" type="button">50</button>
+                                                    <button class="btn btn-outline quick-set-btn" data-val="100" style="padding: 2px 6px; font-size: 0.72rem; min-width: auto; border-radius: 4px;" type="button">100</button>
+                                                    <button class="btn btn-outline quick-set-btn" data-val="4095" style="padding: 2px 6px; font-size: 0.72rem; min-width: auto; border-radius: 4px;" type="button">4095</button>
+                                                    <button class="btn btn-outline quick-set-btn" data-val="65535" style="padding: 2px 6px; font-size: 0.72rem; min-width: auto; border-radius: 4px;" type="button">65535</button>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary update-sim-btn" style="padding: 6px 12px; font-size: 0.8rem; background: linear-gradient(135deg, var(--primary-green-light) 0%, #3b82f6 100%); color: #000; font-weight: 600; border-radius: 4px;" type="button">Update</button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">No registers mapped. Add widgets on the Dashboard first.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+                <!-- Tab Panel 7: System Settings -->
+                <div class="settings-tab-panel" id="panel-system-settings" style="display: none;">
+                    <div class="settings-panel-row">
+                        <div class="settings-card" style="flex: 1; min-width: 300px;">
+                            <h3 class="card-title">REGIONAL &amp; GENERAL SYSTEM SETTINGS</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Primary Language</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select>
+                                            <option>English</option>
+                                            <option>Hindi</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Units Preference</label>
+                                    <div class="form-input-wrapper no-icon">
+                                        <select>
+                                            <option>Metric (KL, °C, bar)</option>
+                                            <option>Imperial (gal, °F, psi)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 12px;">
+                                <label>Log Data Retention Period</label>
+                                <div class="form-input-wrapper no-icon">
+                                    <select>
+                                        <option>30 Days</option>
+                                        <option>90 Days</option>
+                                        <option>365 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Tab Panel 9: About -->
+                <div class="settings-tab-panel" id="panel-about" style="display: none;">
+                    <div class="settings-panel-row" style="display: block;">
+                        <div class="settings-card" style="width: 100%; text-align: center; padding: 32px 24px;">
+                            <img src="{% static 'images/logo.png' %}" class="about-logo-img" style="height: 100px; margin-bottom: 12px; margin-left: -18px;">
+                            <h2 class="animated-text" style="font-size: 1.6rem; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 4px;">RADIOGEET AXIONIX</h2>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px;">Industrial Tank Monitoring &amp; Automation Platform</p>
+                            <div class="status-properties" style="max-width: 500px; margin: 0 auto; text-align: left; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 12px;">
+                                <div class="prop-row"><span>Software Version</span><strong>v2.4.1 (Stable Build)</strong></div>
+                                <div class="prop-row"><span>Developer</span><strong>Radiogeet Digital Pvt. Ltd.</strong></div>
+                                <div class="prop-row"><span>License Type</span><strong>{{ display_license_type }}</strong></div>
+                                <div class="prop-row" style="align-items: center;">
+                                    <span>License Key</span>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <strong style="color: var(--primary-green-light);">{{ masked_license_key }}</strong>
+                                        <a href="{% url 'renew_license' %}" class="btn btn-outline" style="font-size: 0.75rem; padding: 5px 8px; border-color: #3b82f6; color: #60a5fa; text-decoration: none; border-radius: 4px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(59,130,246,0.05)'" title="Edit License Key">
+                                            ⚙️
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="prop-row"><span>License Status</span><strong class="text-green">Validated &amp; Active</strong></div>
+                                <div class="prop-row"><span>Activated For</span><strong>{{ activated_for_username }}</strong></div>
+                                <div class="prop-row" style="border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;"><span>Support Contact</span><strong><a href="tel:+917091273304" style="color: #60a5fa; text-decoration: none;">+91 709 127 3304</a></strong></div>
+                                <div class="prop-row"><span>Support Email</span><strong><a href="mailto:info@radiogeet.com" style="color: #60a5fa; text-decoration: none;">info@radiogeet.com</a></strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer">
+            <span>Data Source: Masibus Scanner (RS485)</span>
+            <span>•</span>
+            <span>Last Updated: {{ current_time|date:"d M Y" }} {{ current_time|time:"h:i:s A" }}</span>
+            <span>•</span>
+            <div class="connection-status">
+                {% if is_connected %}
+                <div class="status-dot online"></div>
+                <span class="connected">Connected</span>
+                {% else %}
+                <div class="status-dot offline" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                <span class="connected" style="color: #ff3b30;">Disconnected</span>
+                {% endif %}
+            </div>
+        </footer>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/settings.js' %}?v=2.4"></script>
+{% endblock %}

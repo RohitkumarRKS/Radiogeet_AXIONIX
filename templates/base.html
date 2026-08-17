@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Radiogeet AXIONIX - Advanced X-Connected Intelligent Operational Network for Industrial eXcellence">
+    <title>{% block title %}Radiogeet AXIONIX{% endblock %}</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link rel="icon" type="image/png" href="{% static 'images/icon2.png' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/icon2.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+    
+    <script>
+        /* Theme Toggle – event delegation (always works, no timing issues) */
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.theme-toggle-btn, #theme-toggle');
+            if (!btn) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            var currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
+
+            /* Apply spin/pop click animation */
+            btn.classList.add('clicked');
+            setTimeout(function() { btn.classList.remove('clicked'); }, 500);
+        });
+    </script>
+    <!-- Global Alarm Modal -->
+    <div id="global-alarm-modal" class="global-alarm-overlay" style="display: none;">
+        <div class="global-alarm-content" id="global-alarm-box">
+            <div class="global-alarm-header">
+                <span class="global-alarm-icon">⚠️</span>
+                <h2 id="global-alarm-title">CRITICAL ALARM</h2>
+            </div>
+            <div class="global-alarm-body">
+                <h3 id="alarm-device-name">Device Name</h3>
+                <p id="alarm-message">Alarm Message</p>
+                <small id="alarm-timestamp" style="color: rgba(255,255,255,0.7);"></small>
+            </div>
+            <div class="global-alarm-footer">
+                <button id="alarm-ack-btn" class="alarm-btn" onclick="acknowledgeGlobalAlarm()">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/alarm_monitor.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tank Level Trend Chart - Radiogeet AXIONIX{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/trend_chart.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-page">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="Radiogeet AXIONIX" class="sidebar-brand-logo-img">
+            <div class="sidebar-brand-sub">RADIOGEET AXIONIX</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{% url 'trend_chart' %}" class="sidebar-nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Trend Chart
+            </a>
+            <a href="{% url 'alarms' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Alarms
+                <span class="sidebar-nav-badge">{{ high_alarms|add:low_alarms }}</span>
+            </a>
+            <a href="{% url 'reports' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Reports
+            </a>
+            <a href="{% url 'data_log' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                Data Log
+            </a>
+            <a href="{% url 'events' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Events
+            </a>
+            <a href="{% url 'settings' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Settings
+            </a>
+            <a href="{% url 'users_list' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Users
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-brand">RADIOGEET</div>
+            <div class="sidebar-footer-copy" style="font-size: 0.75rem; margin-bottom: 8px; color: #94a3b8;">Built in India | Innovated in Singapore | Delivered Globally</div><div class="sidebar-footer-copy">&copy; 2026 Radiogeet Digital Pvt. Ltd.<br>All Rights Reserved.</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Top Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    <h1>TANK LEVEL TREND CHART</h1>
+                    <p>Dashboard > Trend Chart</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <span>System Status</span>
+                    {% if is_connected %}
+                    <div class="status-dot online"></div>
+                    <strong style="color: #4CAF50;">ONLINE</strong>
+                    {% else %}
+                    <div class="status-dot offline" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                    <strong style="color: #ff3b30;">OFFLINE</strong>
+                    {% endif %}
+                </div>
+                <div class="header-datetime">
+                    <div class="date" id="header-date">{{ current_time|date:"d M Y" }}</div>
+                    <div id="header-time">{{ current_time|time:"h:i:s A" }}</div>
+                </div>
+                <div class="header-actions">
+                    <!-- Refresh Button -->
+                    <button class="header-action-btn" id="page-refresh-btn" title="Refresh Page" onclick="window.location.reload();">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                    <button class="header-action-btn theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+                        <!-- Sun icon (visible in dark theme) -->
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <!-- Moon icon (visible in light theme) -->
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Trend Chart Content -->
+        <div class="dashboard-content">
+            <!-- Filter Bar -->
+            <div class="trend-filters-bar">
+                <div class="filter-col">
+                    <label class="filter-label">Select Tanks</label>
+                    <select class="trend-select" id="trend-tanks-select">
+                        {% if tanks or flow_meters %}
+                        <option value="all">All Devices</option>
+                        {% for tank in tanks %}
+                        <option value="{{ tank.id }}">Tank: {{ tank.id }}</option>
+                        {% endfor %}
+                        {% for fm in flow_meters %}
+                        <option value="{{ fm.id }}">Flow: {{ fm.id }}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value="none">No Active Devices</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="filter-col" id="custom-time-range-col" style="display: none; min-width: 320px;">
+                    <label class="filter-label">Custom Range (From - To)</label>
+                    <div class="date-range-input-wrapper" style="display: flex; gap: 8px; align-items: center; background: none; border: none; padding: 0;">
+                        <input type="datetime-local" id="custom-from-datetime" class="trend-datetime-input" style="height: 38px;">
+                        <span style="color: var(--text-secondary); font-size: 0.8rem;">to</span>
+                        <input type="datetime-local" id="custom-to-datetime" class="trend-datetime-input" style="height: 38px;">
+                    </div>
+                </div>
+                <div class="filter-col">
+                    <label class="filter-label">Quick Range</label>
+                    <div class="range-pill-container">
+                        <button class="range-pill">1H</button>
+                        <button class="range-pill active">6H</button>
+                        <button class="range-pill">12H</button>
+                        <button class="range-pill">24H</button>
+                        <button class="range-pill">7D</button>
+                        <button class="range-pill">Custom</button>
+                    </div>
+                </div>
+                <div class="filter-col action-col">
+                    <button class="filter-action-btn" title="Refresh Graph" onclick="window.location.reload();" style="height: 38px;">
+                        <span>↻</span> Refresh
+                    </button>
+                    <a href="{% url 'export_trend' %}?format=excel" class="filter-action-btn" id="trend-export-excel" title="Export Excel Data" style="text-decoration: none; height: 38px;">
+                        <span>📊</span> EXCEL
+                    </a>
+                    <a href="{% url 'export_trend' %}" class="filter-action-btn" id="trend-export-csv" title="Export CSV Data" style="text-decoration: none; height: 38px;">
+                        <span>📥</span> CSV
+                    </a>
+                    <a href="{% url 'export_trend' %}?format=pdf" class="filter-action-btn" id="trend-export-pdf" title="Export PDF Data" style="text-decoration: none; height: 38px;">
+                        <span>📄</span> PDF
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Big Graphic Layout Grid -->
+            <div class="trend-main-layout">
+                <!-- Big Chart Area -->
+                <div class="trend-chart-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title" id="trend-panel-title">TREND CHART (All Devices)</h3>
+                    </div>
+                    <div class="big-chart-wrapper">
+                        <canvas id="big-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Legend checklist -->
+                <div class="trend-legend-panel">
+                    <h3 class="legend-panel-title">LEGEND<br><span>(Click to hide/show)</span></h3>
+                    <div class="legend-checklist-scroll">
+                        {% for tank in tanks %}
+                        <div class="legend-checklist-item" data-tank-id="{{ tank.id }}">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked id="chk-{{ tank.id }}" class="legend-chk-input">
+                                <label for="chk-{{ tank.id }}" class="legend-chk-label">
+                                    <span class="legend-color-dot" style="background-color: var(--primary-green);"></span>
+                                    {{ tank.id }}
+                                </label>
+                            </div>
+                            <span class="legend-level-val" id="legend-val-{{ tank.id }}">{% if tank.level != None %}{{ tank.level|floatformat:1 }}{% else %}--{% endif %}%</span>
+                        </div>
+                        {% endfor %}
+                        {% for fm in flow_meters %}
+                        <div class="legend-checklist-item" data-tank-id="{{ fm.id }}">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked id="chk-{{ fm.id }}" class="legend-chk-input">
+                                <label for="chk-{{ fm.id }}" class="legend-chk-label">
+                                    <span class="legend-color-dot" style="background-color: #3b82f6;"></span>
+                                    {{ fm.id }}
+                                </label>
+                            </div>
+                            <span class="legend-level-val" id="legend-val-{{ fm.id }}">{% if fm.flow_rate != None %}{{ fm.flow_rate|floatformat:1 }}{% else %}--{% endif %} {{ fm.unit }}</span>
+                        </div>
+                        {% endfor %}
+                        {% if not tanks and not flow_meters %}
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; padding-top: 32px;">No active scanner devices mapped.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer">
+            <span>Data Source: Masibus Scanner (RS485)</span>
+            <span>•</span>
+            <span>Last Updated: {{ current_time|date:"d M Y" }} {{ current_time|time:"h:i:s A" }}</span>
+            <span>•</span>
+            <div class="connection-status">
+                {% if is_connected %}
+                <div class="status-dot online"></div>
+                <span class="connected">Connected</span>
+                {% else %}
+                <div class="status-dot offline" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                <span class="connected" style="color: #ff3b30;">Disconnected</span>
+                {% endif %}
+            </div>
+        </footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/trend_chart.js' %}?v=2.3"></script>
+{% endblock %}

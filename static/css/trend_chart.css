@@ -1,0 +1,275 @@
+/* =========================================
+   Trend Chart Stylesheet
+   ========================================= */
+
+.trend-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    align-items: flex-end;
+}
+
+.filter-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-col.action-col {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.filter-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trend-select {
+    padding: 10px 14px;
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: var(--font-primary);
+    outline: none;
+    min-width: 160px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23a0aec0'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.date-range-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-range-input-wrapper span {
+    position: absolute;
+    left: 12px;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.date-range-input-wrapper input {
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px 10px 36px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: var(--font-primary);
+    width: 320px;
+    outline: none;
+}
+
+.range-pill-container {
+    display: flex;
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    gap: 2px;
+}
+
+.range-pill {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: all var(--transition-fast);
+}
+
+.range-pill:hover {
+    color: var(--text-primary);
+}
+
+.range-pill.active {
+    background: var(--primary-green);
+    color: var(--bg-darkest);
+}
+
+.filter-action-btn {
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition-fast);
+}
+
+.filter-action-btn:hover {
+    border-color: var(--primary-green);
+    background: rgba(76, 175, 80, 0.05);
+    color: var(--primary-green-light);
+}
+
+/* Graphic Grid Layout */
+.trend-main-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+}
+
+.trend-chart-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+}
+
+.panel-header {
+    margin-bottom: 20px;
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+}
+
+.big-chart-wrapper {
+    height: 480px;
+    position: relative;
+}
+
+/* Sidebar checklist */
+.trend-legend-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    max-height: 540px;
+}
+
+.legend-panel-title {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+    border-bottom: 1px solid var(--bg-card-border);
+    padding-bottom: 8px;
+}
+
+.legend-panel-title span {
+    font-family: var(--font-primary);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+}
+
+.legend-checklist-scroll {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.legend-checklist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.legend-checklist-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.legend-chk-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.legend-color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-level-val {
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+    .trend-main-layout {
+        grid-template-columns: 1fr;
+    }
+    .trend-legend-panel {
+        max-height: 300px;
+    }
+}
+
+.trend-datetime-input {
+    padding: 8px 12px;
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.trend-datetime-input:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 2px var(--primary-green-glow);
+}
+
+.trend-datetime-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.6);
+}
+
+html[data-theme="dark"] .trend-datetime-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}

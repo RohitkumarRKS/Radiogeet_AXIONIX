@@ -1,0 +1,1005 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tank Level Monitoring Dashboard - Radiogeet AXIONIX{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    .add-widget-card {
+        border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 120px !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        gap: 10px !important;
+        color: var(--text-muted) !important;
+        box-shadow: none !important;
+    }
+    .add-widget-card:hover {
+        border-color: var(--primary-green-light) !important;
+        background: rgba(118, 255, 3, 0.03) !important;
+        color: var(--primary-green-light) !important;
+        box-shadow: 0 0 20px rgba(118, 255, 3, 0.1) !important;
+        transform: translateY(-2px);
+    }
+    .add-widget-card:hover svg {
+        color: var(--primary-green-light) !important;
+        transform: scale(1.1);
+    }
+    .add-widget-card:hover span {
+        color: var(--primary-green-light) !important;
+    }
+    .add-widget-card svg {
+        width: 32px !important;
+        height: 32px !important;
+        stroke-width: 2px !important;
+        color: var(--text-muted) !important;
+        transition: all 0.25s ease;
+    }
+    .add-widget-card span {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        transition: all 0.25s ease;
+    }
+
+    /* Fix dashboard telemetry widget modal inputs squeezed/invisible/nested layout */
+    #add-widget-form .form-input-wrapper {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    #add-widget-form .form-input-wrapper input,
+    #add-widget-form .form-input-wrapper select {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid var(--bg-card-border) !important;
+        padding: 10px 14px !important;
+        color: #fff !important;
+        font-size: 0.88rem !important;
+        border-radius: var(--radius-sm) !important;
+        height: 40px !important;
+        outline: none !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    #add-widget-form .form-input-wrapper input:focus,
+    #add-widget-form .form-input-wrapper select:focus {
+        border-color: var(--primary-green) !important;
+        box-shadow: 0 0 0 3px var(--primary-green-glow) !important;
+    }
+    html[data-theme="light"] #add-widget-form .form-input-wrapper input,
+    html[data-theme="light"] #add-widget-form .form-input-wrapper select {
+        background: #ffffff !important;
+        border: 1px solid #d1d5db !important;
+        color: #111827 !important;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-page">
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="Radiogeet AXIONIX" class="sidebar-brand-logo-img">
+            <div class="sidebar-brand-sub">RADIOGEET AXIONIX</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="sidebar-nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{% url 'trend_chart' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Trend Chart
+            </a>
+            <a href="{% url 'alarms' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Alarms
+                <span class="sidebar-nav-badge">{{ high_alarms|add:low_alarms }}</span>
+            </a>
+            <a href="{% url 'reports' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Reports
+            </a>
+            <a href="{% url 'data_log' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                Data Log
+            </a>
+            <a href="{% url 'events' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Events
+            </a>
+            <a href="{% url 'settings' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Settings
+            </a>
+            <a href="{% url 'users_list' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Users
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-brand">RADIOGEET</div>
+            <div class="sidebar-footer-copy" style="font-size: 0.75rem; margin-bottom: 8px; color: #94a3b8;">Built in India | Innovated in Singapore | Delivered Globally</div><div class="sidebar-footer-copy">&copy; 2026 Radiogeet Digital Pvt. Ltd.<br>All Rights Reserved.</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Top Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    <h1>TANK LEVEL MONITORING DASHBOARD</h1>
+                    <p>Real-time Overview of All Tanks</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <span>System Status</span>
+                    <div class="status-dot online"></div>
+                    <strong class="status-text" style="color: #4CAF50;">ONLINE</strong>
+                </div>
+                <div class="header-datetime">
+                    <div class="date" id="header-date">{{ current_time|date:"d M Y" }}</div>
+                    <div id="header-time">{{ current_time|time:"h:i:s A" }}</div>
+                </div>
+                <div class="header-actions">
+                    <!-- Refresh Button -->
+                    <button class="header-action-btn" id="page-refresh-btn" title="Refresh Page" onclick="window.location.reload();">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                    <button class="header-action-btn theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+                        <!-- Sun icon (visible in dark theme) -->
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <!-- Moon icon (visible in light theme) -->
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card" id="device-summary-card" style="cursor: pointer;" title="Click to view breakdown details">
+                    <div class="summary-card-icon green">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-info">
+                        <h3>{{ total_devices }}</h3>
+                        <p>All Devices <span style="font-size: 0.65rem; color: var(--text-muted); display: block;">{{ total_tanks }} Tanks, {{ total_flow_meters }} Flow Meters</span></p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon green">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-info">
+                        <h3>{% if avg_level %}{{ avg_level }}%{% else %}--{% endif %}</h3>
+                        <p>Across All Tanks <span style="font-size: 0.65rem; color: var(--text-muted); display: block;">{{ total_tanks }} Tanks & {{ total_flow_meters }} Flow Meters</span></p>
+                    </div>
+                </div>
+                <div class="summary-card" id="total-capacity-card" style="cursor: pointer;" title="Click to edit tank capacities">
+                    <div class="summary-card-icon green">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-info">
+                        <h3>{{ total_capacity }}</h3>
+                        <p>Total Capacity <span style="font-size: 0.65rem; color: var(--text-muted); display: block;">({{ total_tanks }} Tanks, {{ total_flow_meters }} Flow Meters)</span></p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon red">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-info">
+                        <h3 class="red" id="high-alarms-count">{{ high_alarms }}</h3>
+                        <p>High Alarms <span id="high-alarms-sub" style="font-size: 0.65rem; color: var(--text-muted); display: block;">({{ high_alarms_tanks }} Tanks, {{ high_alarms_fms }} Flow Meters)</span></p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon orange">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-info">
+                        <h3 class="orange" id="low-alarms-count">{{ low_alarms }}</h3>
+                        <p>Low Alarms <span id="low-alarms-sub" style="font-size: 0.65rem; color: var(--text-muted); display: block;">({{ low_alarms_tanks }} Tanks, {{ low_alarms_fms }} Flow Meters)</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tank Grid -->
+            <div class="tank-grid" {% if not tanks %}style="display: block;"{% endif %}>
+                {% for tank in tanks %}
+                <div class="tank-card {{ tank.status_class }}" 
+                     data-widget-type="{{ tank.widget_type }}" 
+                     data-tank-id="{{ tank.id }}"
+                     data-tank-name="{{ tank.name }}"
+                     data-register-address="{{ tank.register_address }}"
+                     data-slave-id="{{ tank.slave_id }}"
+                     data-function-code="{{ tank.function_code }}"
+                     data-capacity="{{ tank.capacity }}"
+                     data-capacity-unit="{{ tank.capacity_unit|default:"KL" }}"
+                     data-high-limit="{{ tank.high_limit }}"
+                     data-low-limit="{{ tank.low_limit }}"
+                     data-unit="{{ tank.unit|default:"%" }}"
+                     data-raw-zero="{{ tank.raw_zero|default:"0.0" }}"
+                     data-raw-span="{{ tank.raw_span|default:"0.0" }}"
+                     data-scanner-raw-zero="{{ tank.scanner_raw_zero|default:"0.0" }}"
+                     data-scanner-raw-span="{{ tank.scanner_raw_span|default:"0.0" }}"
+                     data-raw-value="{{ tank.raw_value|default:"" }}"
+                     data-com-port="{{ tank.com_port }}"
+                     data-baud-rate="{{ tank.baud_rate }}"
+                     data-parity="{{ tank.parity }}"
+                     data-error-accuracy="{{ tank.error_accuracy|default:"0.0" }}">
+                    <div class="tank-card-header">
+                        <span class="tank-card-name" title="{{ tank.name }}">{{ tank.id }}</span>
+                        <span class="tank-card-status {{ tank.status_class }}">{{ tank.status }}</span>
+                    </div>
+                    <div class="tank-card-subtitle" title="{{ tank.name }}">{{ tank.name }}</div>
+                    <div class="tank-card-body" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;">
+                        {% if tank.widget_type == "gauge" %}
+                        <!-- Gauge Widget -->
+                        <div class="widget-gauge-container" style="width: 54px; height: 54px; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                            <svg viewBox="0 0 36 36" class="widget-gauge" style="width: 100%; height: 100%;">
+                                <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3.5" stroke-dasharray="75, 100" stroke-linecap="round" transform="rotate(-135 18 18)"/>
+                                <path class="gauge-fill {{ tank.status_class }}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="{% if tank.level != None %}{{ tank.level_dasharray }}{% else %}0{% endif %}, 100" stroke-linecap="round" transform="rotate(-135 18 18)" style="transition: stroke-dasharray 0.5s ease;"/>
+                            </svg>
+                        </div>
+                        <span class="tank-card-level">{% if tank.level != None %}{{ tank.formatted_level }}{% else %}--{% endif %}</span>
+                        
+                        {% elif tank.widget_type == "numeric" %}
+                        <!-- Numeric Widget -->
+                        <div class="widget-numeric-box {{ tank.status_class }}" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                            <span class="numeric-val" style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px;">{% if tank.level != None %}{{ tank.formatted_level }}{% else %}--{% endif %}</span>
+                        </div>
+                        
+                        {% elif tank.widget_type == "status" %}
+                        <!-- Status Light Widget -->
+                        <div class="widget-status-container" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;">
+                            <div class="status-light-glow {{ tank.status_class }}" style="width: 26px; height: 26px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; animation: pulse 2s infinite;"></div>
+                        </div>
+                        <span class="tank-card-level">{% if tank.level != None %}{{ tank.formatted_level }}{% else %}--{% endif %}</span>
+                        
+                        {% else %}
+                        <!-- Cylinder Widget (Default) -->
+                        <div class="tank-visual">
+                            <div class="tank-fill {{ tank.status_class }}" {% if tank.level != None %}style="height: {{ tank.clamped_level }}%;"{% else %}style="height: 0%;"{% endif %} data-level="{% if tank.level != None %}{{ tank.level }}{% else %}{% endif %}"></div>
+                        </div>
+                        <span class="tank-card-level">{% if tank.level != None %}{{ tank.formatted_level }}{% else %}--{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-tanks-message" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 48px; border-radius: 12px; text-align: center; color: var(--text-secondary); border: 1px dashed rgba(255,255,255,0.1); width: 100%;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">📊</div>
+                    <h3 style="color: #fff; font-size: 1.2rem; margin-bottom: 8px;">No Widgets Configured</h3>
+                    <p style="font-size: 0.9rem; max-width: 500px; margin: 0 auto; line-height: 1.5; color: var(--text-muted);">
+                        No telemetry channels or widgets are currently active. Click "+ Add Widget" to configure a new monitoring indicator using simulated or real Modbus registers.
+                    </p>
+                </div>
+                {% endfor %}
+                
+                <!-- Add Widget Card -->
+                <div class="tank-card add-widget-card" id="add-widget-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>+ ADD NEW WIDGET</span>
+                </div>
+            </div>
+
+            <!-- Flow Meter Live Section (shown only when flow meters exist) -->
+            <div id="flow-meter-live-section" style="display:none; margin-top: 20px; margin-bottom: 24px;">
+                <div class="chart-header" style="margin-bottom: 12px;">
+                    <div class="chart-title">FLOW METER MONITORING <span>(Live)</span></div>
+                </div>
+                <div id="flow-meter-cards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;"></div>
+            </div>
+
+            <!-- Bottom Section: Chart + Alarms -->
+            <div class="dashboard-bottom">
+                <!-- Trend Chart -->
+                <div class="chart-panel">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            LEVEL TREND CHART <span>(All Tanks)</span>
+                        </div>
+                        <div class="chart-controls">
+                            <select class="chart-filter" id="chart-tank-filter">
+                                <option value="all">All Channels</option>
+                                {% for tank in tanks %}
+                                <option value="{{ tank.id }}">{{ tank.id }}</option>
+                                {% endfor %}
+                                {% for fm in flow_meters %}
+                                <option value="{{ fm.meter_id }}">{{ fm.meter_id }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="time-range-btns">
+                                <button class="time-range-btn" data-range="1h">1H</button>
+                                <button class="time-range-btn active" data-range="6h">6H</button>
+                                <button class="time-range-btn" data-range="12h">12H</button>
+                                <button class="time-range-btn" data-range="24h">24H</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Alarm Summary -->
+                <div class="alarm-panel">
+                    <div class="alarm-header">
+                        <span class="alarm-title">ALARM SUMMARY</span>
+                        <a href="{% url 'alarms' %}" class="alarm-view-all" style="text-decoration: none; font-weight: 600;">View All</a>
+                    </div>
+                    <table class="alarm-table">
+                        <thead>
+                            <tr>
+                                <th>Tank ID</th>
+                                <th>Tank Name</th>
+                                <th>Alarm Type</th>
+                                <th>Level (%)</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alarm in recent_alarms %}
+                            <tr>
+                                <td>{{ alarm.tank_id }}</td>
+                                <td>{{ alarm.tank_name }}</td>
+                                <td><span class="alarm-type-badge {{ alarm.alarm_class }}">{{ alarm.alarm_type }}</span></td>
+                                <td>{{ alarm.level }}%</td>
+                                <td>{{ alarm.time }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">No active alarms</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer">
+            <span>Data Source: Masibus Scanner (RS485)</span>
+            <span>•</span>
+            <span>Last Updated: {{ current_time|date:"d M Y" }} {{ current_time|time:"h:i:s A" }}</span>
+            <span>•</span>
+            <div class="connection-status">
+                {% if is_connected %}
+                <div class="status-dot online"></div>
+                <span class="connected">Connected</span>
+                {% else %}
+                <div class="status-dot offline" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                <span class="connected" style="color: #ff3b30;">Disconnected</span>
+                {% endif %}
+            </div>
+        </footer>
+    </div>
+
+    <!-- Tank Detail Modal (Overlay) -->
+    <div class="tank-modal-overlay" id="tank-modal-overlay">
+        <div class="tank-modal-card animate-fade-in-up" id="tank-modal-card">
+            <!-- Modal Header -->
+            <div class="tank-modal-header">
+                <div class="modal-title-wrap">
+                    <div class="modal-status-indicator" id="modal-tank-status-dot"></div>
+                    <div>
+                        <h2 id="modal-tank-title">TANK 1 DETAIL DIAGNOSTIC</h2>
+                        <p id="modal-tank-subtitle">Real-time Level Sensor Feed • Location: Area 1</p>
+                    </div>
+                </div>
+                <div class="modal-controls">
+                    <button class="modal-control-btn" id="modal-fullscreen-btn" title="Toggle Modal Fullscreen">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                        </svg>
+                    </button>
+                    <button class="modal-control-btn close-btn" id="modal-close-btn" title="Exit Detail View">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content Layout -->
+            <div class="tank-modal-grid">
+                <!-- Left: Gauge Visualization -->
+                <div class="modal-visual-panel">
+                    <div class="sensor-scale-container">
+                        <!-- Scale ticks -->
+                        <div class="scale-ticks" id="modal-scale-ticks">
+                            <span data-val="100">100% -</span>
+                            <span data-val="90">90% -</span>
+                            <span data-val="80">80% -</span>
+                            <span data-val="70">70% -</span>
+                            <span data-val="60">60% -</span>
+                            <span data-val="50">50% -</span>
+                            <span data-val="40">40% -</span>
+                            <span data-val="30">30% -</span>
+                            <span data-val="20">20% -</span>
+                            <span data-val="10">10% -</span>
+                            <span data-val="0">0% -</span>
+                        </div>
+                        
+                        <!-- Main 3D Cylinder Tank Gauge -->
+                        <div class="cylinder-tank">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-fill" id="modal-cylinder-fill">
+                                <div class="fill-top"></div>
+                            </div>
+                            <div class="cylinder-glass-reflection"></div>
+                            
+                            <!-- Dotted threshold limit lines on cylinder -->
+                            <div class="cylinder-limit high-limit" style="bottom: 90%;" id="modal-high-limit-line"><span>High Limit 90%</span></div>
+                            <div class="cylinder-limit low-limit" style="bottom: 10%;" id="modal-low-limit-line"><span>Low Limit 10%</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge-percentage-readout">
+                        <h3 id="modal-percentage-text">0.0%</h3>
+                        <p>CURRENT LEVEL</p>
+                    </div>
+                </div>
+
+                <!-- Right: Properties & Diagnostics -->
+                <div class="modal-diagnostics-panel">
+                    <div class="diagnostics-section">
+                        <h4 class="diagnostics-title" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>LEVEL SENSOR SPECIFICATION</span>
+                            <button id="modal-edit-widget-btn" class="btn btn-outline btn-xs" style="padding: 2px 8px; font-size: 0.75rem; border-color: #3b82f6; color: #3b82f6; background: transparent; cursor: pointer; border-radius: var(--radius-sm);">✏️ Edit</button>
+                        </h4>
+                        <div class="diagnostics-grid">
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Sensor Status:</span>
+                                <span class="diag-val success" id="modal-sensor-status">Connected</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Scanner Address:</span>
+                                <span class="diag-val" id="modal-register-address">Holding Register 40001</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Slave ID (RS485):</span>
+                                <span class="diag-val" id="modal-slave-id">1 (Address 01)</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Baudrate / Parity:</span>
+                                <span class="diag-val" id="modal-baudrate">9600 bps / None</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="diagnostics-section">
+                        <h4 class="diagnostics-title">VOLUME METRICS</h4>
+                        <div class="diagnostics-grid">
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Total Capacity:</span>
+                                <span class="diag-val" id="modal-capacity">5.0 KL (5000 Liters)</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Current Volume:</span>
+                                <span class="diag-val highlight-green" id="modal-current-volume">3.9 KL (3900 Liters)</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Remaining Space:</span>
+                                <span class="diag-val" id="modal-empty-volume">1.1 KL (1100 Liters)</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Alarm Configuration:</span>
+                                <span class="diag-val text-yellow" id="modal-alarm-config">10% Low / 90% High</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="diagnostics-section">
+                        <h4 class="diagnostics-title">LIVE HISTORICAL GRAPH (LAST 24 HOURS)</h4>
+                        <div class="modal-chart-container">
+                            <canvas id="modal-tank-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Flow Meter Detail Modal (Overlay) -->
+    <div class="tank-modal-overlay" id="flow-modal-overlay">
+        <div class="tank-modal-card animate-fade-in-up" id="flow-modal-card">
+            <div class="tank-modal-header">
+                <div class="modal-title-wrap">
+                    <div class="modal-status-indicator" id="modal-flow-status-dot"></div>
+                    <div>
+                        <h2 id="modal-flow-title">FLOW METER DETAIL</h2>
+                        <p id="modal-flow-subtitle">Real-time Flow Sensor Feed</p>
+                    </div>
+                </div>
+                <div class="modal-controls">
+                    <button class="modal-control-btn close-btn" id="modal-flow-close-btn" title="Exit Detail View">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tank-modal-grid">
+                <!-- Left: Industrial Digital Flow Meter visualizer (Matching Reference Image) -->
+                <div class="modal-visual-panel flow-modal-visual-panel">
+                    <div class="industrial-flow-meter">
+                        <!-- 1. The Digital LCD Display Box -->
+                        <div class="meter-display-casing">
+                            <div class="lcd-inner-bezel">
+                                <div class="meter-lcd-screen">
+                                    <div class="lcd-main-readout">
+                                        <span id="modal-flow-percentage-text">0.0</span>
+                                    </div>
+                                    <div class="lcd-unit-label">
+                                        <span id="modal-flow-rate-unit-label">L/min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2. The Mounting Neck -->
+                        <div class="meter-mounting-neck">
+                            <div class="neck-nut-top"></div>
+                            <div class="neck-shaft"></div>
+                            <div class="neck-nut-bottom"></div>
+                        </div>
+                        
+                        <!-- 3. The Pipe and Flanges -->
+                        <div class="meter-pipe-assembly">
+                            <div class="metal-pipe left-pipe"></div>
+                            
+                            <!-- Left Flange -->
+                            <div class="pipe-flange">
+                                <div class="flange-rim"></div>
+                                <div class="flange-bolts">
+                                    <div class="bolt bolt-1"></div>
+                                    <div class="bolt bolt-2"></div>
+                                    <div class="bolt bolt-3"></div>
+                                    <div class="bolt bolt-4"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Clear Glass Flow Chamber with Golden Fluid -->
+                            <div class="glass-flow-chamber">
+                                <div class="chamber-fluid-bg"></div>
+                                <div class="chamber-glass-shine"></div>
+                                
+                                <!-- Active Flow Arrows & Bubbles -->
+                                <div class="flow-interactive-wrapper" id="modal-flow-waves">
+                                    <div class="chamber-flow-arrows">
+                                        <div class="flow-arrow arrow-1"></div>
+                                        <div class="flow-arrow arrow-2"></div>
+                                    </div>
+                                    <div class="chamber-bubbles">
+                                        <div class="bubble wave-bubble b1"></div>
+                                        <div class="bubble wave-bubble b2"></div>
+                                        <div class="bubble wave-bubble b3"></div>
+                                        <div class="bubble wave-bubble b4"></div>
+                                        <div class="bubble wave-bubble b5"></div>
+                                        <div class="bubble wave-bubble b6"></div>
+                                        <div class="bubble wave-bubble b7"></div>
+                                        <div class="bubble wave-bubble b8"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Flange -->
+                            <div class="pipe-flange">
+                                <div class="flange-rim"></div>
+                                <div class="flange-bolts">
+                                    <div class="bolt bolt-1"></div>
+                                    <div class="bolt bolt-2"></div>
+                                    <div class="bolt bolt-3"></div>
+                                    <div class="bolt bolt-4"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="metal-pipe right-pipe"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Diagnostics -->
+                <div class="modal-diagnostics-panel">
+                    <div class="diagnostics-section">
+                        <h4 class="diagnostics-title" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>FLOW METRICS</span>
+                            <button id="modal-flow-edit-widget-btn" class="btn btn-outline btn-xs" style="padding: 2px 8px; font-size: 0.75rem; border-color: #3b82f6; color: #3b82f6; background: transparent; cursor: pointer; border-radius: var(--radius-sm);">✏️ Edit</button>
+                        </h4>
+                        <div class="diagnostics-grid">
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Sensor Status:</span>
+                                <span class="diag-val success" id="modal-flow-status">Online</span>
+                            </div>
+                            <div class="diagnostic-item">
+                                <span class="diag-label">Alarm Configuration:</span>
+                                <span class="diag-val" id="modal-flow-alarm-config">--</span>
+                            </div>
+                            <div class="diagnostic-item" style="grid-column: span 2; background: rgba(0, 188, 212, 0.05); border-left: 3px solid #00bcd4; padding: 12px; border-radius: 8px;">
+                                <span class="diag-label" style="font-size: 0.9rem;">Flow Rate:</span>
+                                <span class="diag-val" style="font-size: 1.8rem; font-family: var(--font-display); color: var(--primary-green-light);"><span id="modal-flow-rate">0.00</span> <span id="modal-flow-unit" style="font-size: 1rem; color: #888;">L/min</span></span>
+                            </div>
+                            <div class="diagnostic-item" style="grid-column: span 2; background: rgba(33, 150, 243, 0.05); border-left: 3px solid #2196f3; padding: 12px; border-radius: 8px; display: none;">
+                                <span class="diag-label" style="font-size: 0.9rem;">Total Volume:</span>
+                                <span class="diag-val" style="font-size: 1.8rem; font-family: var(--font-display); color: #2196f3;"><span id="modal-flow-total">0.00</span> <span id="modal-total-unit" style="font-size: 1rem; color: #888;">Liters</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Summary Modal (Overlay) -->
+    <div class="tank-modal-overlay" id="device-summary-modal-overlay" style="display: none;">
+        <div class="tank-modal-card animate-fade-in-up" style="max-width: 600px; width: 100%; border: 1px solid var(--bg-card-border); background: var(--bg-card); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-lg);">
+            <!-- Header -->
+            <div class="tank-modal-header" style="border-bottom: 1px solid var(--bg-card-border); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: transparent;">
+                <div>
+                    <h2 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); letter-spacing: 1px;">DEVICE MONITORING SUMMARY</h2>
+                    <p style="font-size: 0.75rem; color: var(--text-muted);">Real-time count and status breakdown of all active devices</p>
+                </div>
+                <button class="modal-control-btn close-btn" id="device-summary-close-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Close Modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Summary stats row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div style="background: rgba(76, 175, 80, 0.05); border: 1px solid rgba(76, 175, 80, 0.15); padding: 14px; border-radius: var(--radius-md); text-align: center;">
+                    <div style="font-size: 1.8rem; font-family: var(--font-display); font-weight: 800; color: var(--primary-green-light);" id="modal-summary-tanks-count">{{ total_tanks }}</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-top: 4px;">Active Tanks</div>
+                </div>
+                <div style="background: rgba(33, 150, 243, 0.05); border: 1px solid rgba(33, 150, 243, 0.15); padding: 14px; border-radius: var(--radius-md); text-align: center;">
+                    <div style="font-size: 1.8rem; font-family: var(--font-display); font-weight: 800; color: #2196f3;" id="modal-summary-meters-count">{{ total_flow_meters }}</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-top: 4px;">Active Flow Meters</div>
+                </div>
+            </div>
+            
+            <!-- Breakdown Lists -->
+            <div style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding-right: 4px;">
+                <!-- Tanks Section -->
+                <div>
+                    <h3 style="font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: var(--primary-green); letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">Tanks Breakdown</h3>
+                    <div id="device-summary-tanks-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Will be populated dynamically via JS -->
+                    </div>
+                </div>
+                
+                <!-- Flow Meters Section -->
+                <div>
+                    <h3 style="font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: #2196f3; letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">Flow Meters Breakdown</h3>
+                    <div id="device-summary-meters-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Will be populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Capacity Editor Modal (Overlay) -->
+    <div class="tank-modal-overlay" id="capacity-editor-modal-overlay" style="display: none;">
+        <div class="tank-modal-card animate-fade-in-up" style="max-width: 550px; width: 100%; border: 1px solid var(--bg-card-border); background: var(--bg-card); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-lg);">
+            <!-- Header -->
+            <div class="tank-modal-header" style="border-bottom: 1px solid var(--bg-card-border); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: transparent;">
+                <div>
+                    <h2 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); letter-spacing: 1px;">DEVICE CAPACITIES & RATING LIMITS</h2>
+                    <p style="font-size: 0.75rem; color: var(--text-muted);">Real-time volumetric design capacities and maximum limits of active hardware</p>
+                </div>
+                <button class="modal-control-btn close-btn" id="capacity-editor-close-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Close Modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- List of Devices and Capacities -->
+            <div style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding-right: 4px;">
+                <!-- Tanks Section -->
+                <div>
+                    <h3 style="font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: var(--primary-green); letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">Tanks Volumetric Capacities</h3>
+                    <div id="capacity-editor-tanks-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Will be populated dynamically via JS -->
+                    </div>
+                </div>
+                
+                <!-- Flow Meters Section -->
+                <div>
+                    <h3 style="font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: #2196f3; letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">Flow Meters Rating Limits</h3>
+                    <div id="capacity-editor-meters-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Will be populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--bg-card-border); padding-top: 16px; margin-top: 20px;">
+                <button class="btn btn-outline" id="capacity-editor-cancel-btn" type="button" style="padding: 10px 16px; font-size: 0.85rem; border-radius: var(--radius-sm);">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Widget Modal (Overlay) -->
+    <div class="tank-modal-overlay" id="add-widget-modal-overlay">
+        <div class="tank-modal-card animate-fade-in-up" style="max-width: 500px; width: 100%; border: 1px solid var(--bg-card-border); background: var(--bg-card); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-lg);">
+            <!-- Header -->
+            <div class="tank-modal-header" style="border-bottom: 1px solid var(--bg-card-border); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--text-primary); letter-spacing: 1px;">CREATE TELEMETRY WIDGET</h2>
+                    <p style="font-size: 0.75rem; color: var(--text-muted);">Add new monitor channel to the live dashboard</p>
+                </div>
+                <button class="modal-control-btn close-btn" id="add-widget-close-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Close Modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Form -->
+            <form id="add-widget-form" onsubmit="return false;">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Device Type <span class="required" style="color: var(--alarm-high);">*</span></label>
+                        <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                            <select id="widget-device-type" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem; cursor: pointer;">
+                                <option value="tank" style="background: var(--bg-dark);">Tank Level Sensor</option>
+                                <option value="flow_meter" style="background: var(--bg-dark);">Flow Meter</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">COM Port <span class="required" style="color: var(--alarm-high);">*</span></label>
+                        <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                            <select id="widget-com-port" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem; cursor: pointer;">
+                                {% for port in available_ports %}
+                                <option value="{{ port }}" style="background: var(--bg-dark);">{{ port }}</option>
+                                {% endfor %}
+                                <option value="SIMULATOR" style="background: var(--bg-dark);" {% if not available_ports %}selected{% endif %}>SIMULATOR</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label id="widget-id-label" style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Widget ID <span class="required" style="color: var(--alarm-high);">*</span></label>
+                        <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                            <input type="text" id="widget-id-input" placeholder="e.g. TANK 2" required style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label id="widget-name-label" style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Widget Name <span class="required" style="color: var(--alarm-high);">*</span></label>
+                        <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                            <input type="text" id="widget-name-input" placeholder="e.g. Acid Tank" required style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tank Fields Group -->
+                <div id="tank-fields-group">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Register Address <span class="required" style="color: var(--alarm-high);">*</span></label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" id="widget-address-input" placeholder="e.g. 40002" required style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Widget Style <span class="required" style="color: var(--alarm-high);">*</span></label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <select id="widget-style-input" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem; cursor: pointer;">
+                                    <option value="cylinder" style="background: var(--bg-dark);">Cylinder Gauge</option>
+                                    <option value="gauge" style="background: var(--bg-dark);">Circular Dial</option>
+                                    <option value="numeric" style="background: var(--bg-dark);">Digital Readout</option>
+                                    <option value="status" style="background: var(--bg-dark);">Alert Status Light</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                        <div class="form-group">
+                            <label id="widget-capacity-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Capacity (KL)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-capacity-input" value="5.0" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="widget-high-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">High Threshold (%)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-high-input" value="90" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="widget-low-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Low Threshold (%)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-low-input" value="10" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Slave ID</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" id="widget-slave-id-input" value="1" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="widget-error-accuracy-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Error Accuracy (%)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-error-accuracy" value="0.0" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flow Meter Fields Group -->
+                <div id="flow-fields-group" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Flow Rate Register <span class="required" style="color: var(--alarm-high);">*</span></label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" id="widget-flow-rate-reg" placeholder="e.g. 40001" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Total Volume Register <span class="required" style="color: var(--alarm-high);">*</span></label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" id="widget-flow-total-reg" placeholder="e.g. 40003" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Flow Rate Unit</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="text" id="widget-flow-rate-unit" value="L/min" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Total Volume Unit</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="text" id="widget-flow-total-unit" value="Liters" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Slave ID</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" id="widget-flow-slave-id" value="1" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="widget-flow-high-limit-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">High Limit (L/min)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-flow-high-limit" value="90" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="widget-flow-low-limit-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Low Limit (L/min)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-flow-low-limit" value="10" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="widget-flow-error-accuracy-label" style="display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Error Accuracy (L/min)</label>
+                            <div class="form-input-wrapper no-icon" style="background: rgba(255,255,255,0.02); border: 1px solid var(--bg-card-border); border-radius: var(--radius-sm); padding: 8px 12px;">
+                                <input type="number" step="any" id="widget-flow-error-accuracy" value="0.0" style="background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.88rem;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button class="btn btn-outline" id="add-widget-cancel-btn" type="button" style="padding: 10px 16px; font-size: 0.85rem; border-radius: var(--radius-sm);">Cancel</button>
+                    <button class="btn btn-primary" id="add-widget-submit-btn" type="submit" style="padding: 10px 20px; font-size: 0.85rem; background: linear-gradient(135deg, var(--primary-green-light) 0%, #3b82f6 100%); color: #000; font-weight: 600; border-radius: var(--radius-sm);">Create Widget</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/dashboard.js' %}?v=3.3"></script>
+{% endblock %}

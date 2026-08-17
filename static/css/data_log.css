@@ -1,0 +1,257 @@
+/* =========================================
+   Data Log Page Stylesheet
+   ========================================= */
+
+.log-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    align-items: flex-end;
+}
+
+.log-select {
+    padding: 10px 14px;
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: var(--font-primary);
+    outline: none;
+    min-width: 150px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23a0aec0'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.date-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-wrapper span {
+    position: absolute;
+    left: 12px;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.date-input-wrapper input {
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px 10px 36px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: var(--font-primary);
+    width: 320px;
+    outline: none;
+}
+
+.log-filter-bar .action-buttons-col {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Page Main Grid */
+.data-log-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+}
+
+.log-data-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.log-table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+}
+
+.table-header-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.table-search {
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    outline: none;
+    width: 200px;
+}
+
+.table-scroll-wrapper {
+    overflow-x: auto;
+}
+
+.data-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-matrix-table th {
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--bg-card-border);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.data-matrix-table td {
+    padding: 12px 14px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    white-space: nowrap;
+}
+
+.data-matrix-table tr:hover td {
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.text-green { color: var(--primary-green-light); }
+
+.pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--bg-card-border);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pag-btn {
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+}
+
+.pag-btn:hover {
+    border-color: var(--primary-green);
+    color: var(--text-primary);
+}
+
+.pag-btn.active {
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--bg-darkest);
+}
+
+.page-size-select {
+    padding: 6px 10px;
+    background: var(--bg-medium);
+    border: 1px solid var(--bg-card-border);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+
+
+@media (max-width: 1024px) {
+    .data-log-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Shortcuts Panel Styles */
+.shortcuts-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 20px 14px;
+    height: fit-content;
+}
+
+.panel-heading {
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+}
+
+.shortcut-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.shortcut-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-primary);
+}
+
+.shortcut-item.active {
+    background: rgba(76, 175, 80, 0.12);
+    color: var(--primary-green-light);
+}
+
+@media (max-width: 1350px) {
+    .log-filter-bar .action-buttons-col {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}

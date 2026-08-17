@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports - Radiogeet AXIONIX{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/reports.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-page">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="Radiogeet AXIONIX" class="sidebar-brand-logo-img">
+            <div class="sidebar-brand-sub">RADIOGEET AXIONIX</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{% url 'trend_chart' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Trend Chart
+            </a>
+            <a href="{% url 'alarms' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Alarms
+                <span class="sidebar-nav-badge">{{ high_alarms|add:low_alarms }}</span>
+            </a>
+            <a href="{% url 'reports' %}" class="sidebar-nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Reports
+            </a>
+            <a href="{% url 'data_log' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                Data Log
+            </a>
+            <a href="{% url 'events' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Events
+            </a>
+            <a href="{% url 'settings' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Settings
+            </a>
+            <a href="{% url 'users_list' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Users
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-brand">RADIOGEET</div>
+            <div class="sidebar-footer-copy" style="font-size: 0.75rem; margin-bottom: 8px; color: #94a3b8;">Built in India | Innovated in Singapore | Delivered Globally</div><div class="sidebar-footer-copy">&copy; 2026 Radiogeet Digital Pvt. Ltd.<br>All Rights Reserved.</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Top Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    <h1>REPORTS</h1>
+                    <p>Dashboard > Reports</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <span>System Status</span>
+                    <div class="status-dot online"></div>
+                    <strong style="color: #4CAF50;">ONLINE</strong>
+                </div>
+                <div class="header-datetime">
+                    <div class="date" id="header-date">{{ current_time|date:"d M Y" }}</div>
+                    <div id="header-time">{{ current_time|time:"h:i:s A" }}</div>
+                </div>
+                <div class="header-actions">
+                    <!-- Refresh Button -->
+                    <button class="header-action-btn" id="page-refresh-btn" title="Refresh Page" onclick="window.location.reload();">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                    <button class="header-action-btn theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+                        <!-- Sun icon (visible in dark theme) -->
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <!-- Moon icon (visible in light theme) -->
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Reports Dashboard Content -->
+        <div class="dashboard-content">
+
+
+            <!-- Generate Report Filters -->
+            <form method="get" action="{% url 'reports' %}" class="report-filters-bar">
+                <div class="filter-col">
+                    <label class="filter-label">Report Type</label>
+                    <select name="report_type" id="report_type_select" class="report-select" onchange="toggleEndDate()">
+                        <option value="daily" {% if report_type == "daily" %}selected{% endif %}>Daily Report</option>
+                        <option value="weekly" {% if report_type == "weekly" %}selected{% endif %}>Weekly Report</option>
+                        <option value="monthly" {% if report_type == "monthly" %}selected{% endif %}>Monthly Report</option>
+                        <option value="custom" {% if report_type == "custom" %}selected{% endif %}>Custom Report</option>
+                    </select>
+                </div>
+                <div class="filter-col">
+                    <label class="filter-label">Select Device</label>
+                    <select name="device_id" class="report-select">
+                        <option value="all" {% if device_id == "all" %}selected{% endif %}>All Devices</option>
+                        <optgroup label="Tanks">
+                        {% for tank in all_tanks_list %}
+                        <option value="tank_{{ tank.tank_id }}" {% if device_id == "tank_"|add:tank.tank_id %}selected{% endif %}>{{ tank.name }}</option>
+                        {% endfor %}
+                        </optgroup>
+                        <optgroup label="Flow Meters">
+                        {% for fm in all_flow_meters_list %}
+                        <option value="fm_{{ fm.meter_id }}" {% if device_id == "fm_"|add:fm.meter_id %}selected{% endif %}>{{ fm.name }}</option>
+                        {% endfor %}
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="filter-col">
+                    <label class="filter-label" id="date_label">Date</label>
+                    <input type="date" name="date" value="{{ date_value }}" class="report-date-input">
+                </div>
+                <div class="filter-col" id="end_date_col" {% if report_type != 'custom' %}style="display: none;"{% endif %}>
+                    <label class="filter-label">End Date</label>
+                    <input type="date" name="end_date" value="{{ end_date_value }}" class="report-date-input">
+                </div>
+                <div class="filter-col actions-col">
+                    <button type="submit" class="btn btn-primary">📊 Generate Report</button>
+                    <a href="{% url 'export_reports' %}?report_type={{ report_type }}&device_id={{ device_id }}&date={{ date_value }}&end_date={{ end_date_value }}&format=excel" class="btn btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; margin-right: 8px;">📊 EXCEL</a>
+                    <a href="{% url 'export_reports' %}?report_type={{ report_type }}&device_id={{ device_id }}&date={{ date_value }}&end_date={{ end_date_value }}" class="btn btn-outline" style="text-decoration: none; display: inline-flex; align-items: center;">📈 CSV</a>
+                    <a href="{% url 'export_reports' %}?report_type={{ report_type }}&device_id={{ device_id }}&date={{ date_value }}&end_date={{ end_date_value }}&format=pdf" class="btn btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; margin-left: 8px;">📄 PDF</a>
+                </div>
+            </form>
+
+            <!-- Main Layout with Left Shortcuts list & Right Data tables -->
+            <div class="reports-main-grid">
+                <!-- Left Sidebar Shortcuts List -->
+                <div class="shortcuts-panel">
+                    <h3 class="panel-heading">REPORT SHORTCUTS</h3>
+                    <div class="shortcut-list">
+                        <a href="?report_type=daily&device_id={{ device_id }}&date={{ date_value }}" class="shortcut-item {% if report_type == 'daily' %}active{% endif %}">📄 Daily Report</a>
+                        <a href="?report_type=weekly&device_id={{ device_id }}&date={{ date_value }}" class="shortcut-item {% if report_type == 'weekly' %}active{% endif %}">📄 Weekly Report</a>
+                        <a href="?report_type=monthly&device_id={{ device_id }}&date={{ date_value }}" class="shortcut-item {% if report_type == 'monthly' %}active{% endif %}">📄 Monthly Report</a>
+                        <a href="?report_type=custom&device_id={{ device_id }}&date={{ date_value }}&end_date={{ end_date_value }}" class="shortcut-item {% if report_type == 'custom' %}active{% endif %}">📄 Custom Report</a>
+                    </div>
+                </div>
+
+                <!-- Right Layout: Statistics Summary Tables & Mini Graphics -->
+                <div class="report-data-panel">
+                    {% if records or fm_records %}
+                    <div class="summary-table-section">
+                        <div class="table-title-header">
+                            <h3 class="section-title">TANK DETAILS & FLOW METER DETAILS ({{ current_time|date:"d M Y" }})</h3>
+                            <input type="text" class="table-search" placeholder="Search Device...">
+                        </div>
+                        <div class="table-scroll-wrap">
+                            <table class="report-summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Device ID</th>
+                                        <th>Device Name</th>
+                                        <th>Opening Value</th>
+                                        <th>Closing Value</th>
+                                        <th>Difference</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if records %}
+                                    <tr style="background-color: #2563eb; color: #ffffff; font-weight: bold;">
+                                        <td colspan="5" style="text-align: left; padding: 6px 12px; font-size: 11px; letter-spacing: 0.5px;">TANK DETAILS</td>
+                                    </tr>
+                                    {% for r in records %}
+                                    <tr>
+                                        <td>{{ r.id }}</td>
+                                        <td>{{ r.name }}</td>
+                                        <td>{{ r.opening }}</td>
+                                        <td>{{ r.closing }}</td>
+                                        <td class="text-green">{{ r.difference }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-totals-row">
+                                        <td>TANK TOTAL</td>
+                                        <td>-</td>
+                                        <td>{{ tank_open_disp }}</td>
+                                        <td>{{ tank_close_disp }}</td>
+                                        <td class="text-green">{% if tank_diff_val >= 0 and not tank_diff_disp|slice:":1" == "+" and not tank_diff_disp|slice:":1" == "-" %}+{% endif %}{{ tank_diff_disp }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if fm_records %}
+                                    <tr style="background-color: #2563eb; color: #ffffff; font-weight: bold;">
+                                        <td colspan="5" style="text-align: left; padding: 6px 12px; font-size: 11px; letter-spacing: 0.5px;">FLOW METER DETAILS</td>
+                                    </tr>
+                                    {% for r in fm_records %}
+                                    <tr style="background-color: rgba(59, 130, 246, 0.05);">
+                                        <td>{{ r.id }}</td>
+                                        <td>{{ r.name }}</td>
+                                        <td>{{ r.opening }}</td>
+                                        <td>{{ r.closing }}</td>
+                                        <td class="text-green">{{ r.difference }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-totals-row" style="background-color: rgba(59, 130, 246, 0.08);">
+                                        <td>FLOW METER TOTAL</td>
+                                        <td>-</td>
+                                        <td>{{ fm_open_disp }}</td>
+                                        <td>{{ fm_close_disp }}</td>
+                                        <td class="text-green">{% if fm_diff_val >= 0 and not fm_diff_disp|slice:":1" == "+" and not fm_diff_disp|slice:":1" == "-" %}+{% endif %}{{ fm_diff_disp }}</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Mini Layout: Trend Summary and Donut alarm chart -->
+                    <div class="report-bottom-grid">
+                        <div class="trend-summary-card">
+                            <h3 class="section-title">LEVEL TREND SUMMARY ({{ current_time|date:"d M Y" }})</h3>
+                            <div class="mini-chart-wrap">
+                                <canvas id="mini-trend-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="donut-summary-card">
+                            <h3 class="section-title">ALARM SUMMARY ({{ current_time|date:"d M Y" }})</h3>
+                            <div class="donut-layout">
+                                <div class="donut-chart-wrap">
+                                    <canvas id="alarm-donut-chart"></canvas>
+                                </div>
+                                <div class="donut-legend">
+                                    <div class="d-legend-item"><span class="color-dot red"></span> High Alarms ({{ high_alarms }})</div>
+                                    <div class="d-legend-item"><span class="color-dot orange"></span> Low Alarms ({{ low_alarms }})</div>
+                                    <div class="d-legend-item"><span class="color-dot purple"></span> Total ({{ total_alarms }})</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-summary-card">
+                            <h3 class="section-title">REPORT INFORMATION</h3>
+                            <div class="info-list">
+                                <div class="info-row"><span>Report Type:</span><strong>{{ report_type|title }} Report</strong></div>
+                                <div class="info-row"><span>Range:</span><strong>{{ date_value }}{% if report_type == "custom" %} to {{ end_date_value }}{% elif report_type == "weekly" %} (Last 7 Days){% elif report_type == "monthly" %} (Last 30 Days){% endif %}</strong></div>
+                                <div class="info-row"><span>Time Range:</span><strong>12:00 AM - 11:59 PM</strong></div>
+                                <div class="info-row"><span>Total Tanks:</span><strong>{{ total_tanks }}</strong></div>
+                                <div class="info-row"><span>Total Alarms:</span><strong>{{ total_alarms }}</strong></div>
+                                <div class="info-row"><span>Generated By:</span><strong>{{ user.username }}</strong></div>
+                                <div class="info-row"><span>Generated On:</span><strong>{{ current_time|date:"d M Y h:i A" }}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chronological Device Data Change Log Section -->
+                    <div class="summary-table-section" style="margin-top: 32px;">
+                        <div class="table-header-wrap" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255, 255, 255, 0.02);">
+                            <h3 class="section-title" style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #fff;">DEVICE DATA CHANGE LOG</h3>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Showing state changes chronologically</span>
+                        </div>
+                        <div class="table-scroll-wrap" style="max-height: 400px; overflow-y: auto;">
+                            <table class="report-summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Device ID</th>
+                                        <th>Device Name</th>
+                                        <th>Change Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for change in changes %}
+                                    <tr>
+                                        <td><strong>{{ change.timestamp|date:"d M Y h:i:s A" }}</strong></td>
+                                        <td>{{ change.device_id }}</td>
+                                        <td>{{ change.device_name }}</td>
+                                        <td class="text-green" style="text-align: left; padding-left: 24px;">{{ change.change_desc }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-secondary);">
+                                            No state changes recorded during the selected period.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="offline-chart-placeholder" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 64px 32px; border-radius: 12px; text-align: center; color: var(--text-secondary); border: 1px dashed rgba(255,255,255,0.1); width: 100%;">
+                        <span style="font-size: 3rem; margin-bottom: 16px; display: block;">📈</span>
+                        <h3 style="color: #fff; font-size: 1.3rem; margin-bottom: 8px;">No Operational Data Mapped</h3>
+                        <p style="font-size: 0.9rem; max-width: 500px; margin: 0 auto; line-height: 1.5; color: var(--text-secondary);">
+                            Reports require an active communication scanner connection. Connect your RS485 converter and ensure the Masibus Scanner link is online to generate diagnostic logs.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer">
+            <span>Data Source: Masibus Scanner (RS485)</span>
+            <span>•</span>
+            <span>Last Updated: {{ current_time|date:"d M Y" }} {{ current_time|time:"h:i:s A" }}</span>
+            <span>•</span>
+            <div class="connection-status">
+                {% if is_connected %}
+                <div class="status-dot online"></div>
+                <span class="connected">Connected</span>
+                {% else %}
+                <div class="status-dot offline" style="background-color: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></div>
+                <span class="connected" style="color: #ff3b30;">Disconnected</span>
+                {% endif %}
+            </div>
+        </footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Embed database aggregates and values for reports.js
+    window.chartLabels = JSON.parse('{{ chart_labels|escapejs }}');
+    window.chartDatasets = JSON.parse('{{ chart_datasets|escapejs }}');
+    window.highAlarmsCount = parseInt('{{ high_alarms|escapejs }}') || 0;
+    window.lowAlarmsCount = parseInt('{{ low_alarms|escapejs }}') || 0;
+
+    function toggleEndDate() {
+        const select = document.getElementById('report_type_select');
+        const col = document.getElementById('end_date_col');
+        const label = document.getElementById('date_label');
+        if (select && col) {
+            if (select.value === 'custom') {
+                col.style.display = 'block';
+                if (label) label.textContent = 'Start Date';
+            } else {
+                col.style.display = 'none';
+                if (label) label.textContent = 'Date';
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', toggleEndDate);
+</script>
+<script src="{% static 'js/reports.js' %}"></script>
+{% endblock %}
